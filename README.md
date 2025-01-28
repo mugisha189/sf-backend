@@ -6,9 +6,6 @@ A platform for saving for future starting from few money
 
 ## Project setup
 
-
-
-
 * Clone the project repository
 
 ```bash
