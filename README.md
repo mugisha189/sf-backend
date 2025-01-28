@@ -8,23 +8,24 @@ A platform for saving for future starting from few money
 
 
 
-*
 ```bash
 $ npm install
 ```
 
 
 * Clone the project repository
-*
+
 ```bash
 $ git clone https://github.com/mwizerwa77/savingforfuture-backend.git
+```
 
-*
+
+* Navigate the project folder
 ```bash
-$ cd gtechcenter-backend
+$ cd savingforfuture-backend
+```
 
-
-*
+* Set environment variables
 ```bash
 DATABASE_URL=<your db_url>
 DATABASE_HOST=<your db_hostname>
@@ -41,7 +42,7 @@ EMAIL_SECURE=<whether to initiate communication with ssl/tls>
 EMAIL_FROM=<Sender email address>
 GMAIL_SERVICE_AUTH_EMAIL=<aunthenticated email address>
 GMAIL_SERVICE_AUTH_APP_PASSWORD=<email app password>
-
+```
 
 
 ## Compile and run the project
