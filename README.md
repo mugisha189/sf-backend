@@ -8,10 +8,6 @@ A platform for saving for future starting from few money
 
 
 
-```bash
-$ npm install
-```
-
 
 * Clone the project repository
 
@@ -42,6 +38,12 @@ EMAIL_SECURE=<whether to initiate communication with ssl/tls>
 EMAIL_FROM=<Sender email address>
 GMAIL_SERVICE_AUTH_EMAIL=<aunthenticated email address>
 GMAIL_SERVICE_AUTH_APP_PASSWORD=<email app password>
+```
+
+* Install required dependencies
+
+```bash
+$ npm install
 ```
 
 
