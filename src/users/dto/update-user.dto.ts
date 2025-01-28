@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from "class-validator";
 
 const passwordRegEx =
@@ -5,28 +6,34 @@ const passwordRegEx =
 
 
 export class UpdateUserDto {
+    @ApiProperty()
     @IsString()
     @MinLength(2, { message: "First name must have atleast 2 characters." })
     @IsNotEmpty()
     firstName: string;
 
+    @ApiProperty()
     @IsString()
     @MinLength(2, { message: "Last name must have atleast 2 characters." })
     @IsNotEmpty()
     lastName: string;
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     nationalId: string
 
+    @ApiProperty()
     @IsEmail()
     @IsNotEmpty()
     email: string
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
     phoneNumber: string
 
+    @ApiProperty()
     @IsNotEmpty()
     @Matches(passwordRegEx, {
         message: `Password must contain Minimum 8 and maximum 20 characters, 

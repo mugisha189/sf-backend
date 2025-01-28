@@ -9,8 +9,11 @@ import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
 import { EmailService } from 'src/email/email.service';
 import { VerifyOtpDto } from 'src/otp/dto/verifyOtp.dto';
 import { ForgotPWordDto } from 'src/users/dto/forget-password.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Users } from 'src/users/entity/user.entity';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
@@ -20,11 +23,21 @@ export class AuthController {
 
     @HttpCode(HttpStatus.OK)
     @Post('login')
+    @ApiOperation({ summary: "User login" })
+    @ApiResponse({
+        status: 201,
+        description: "Check email for otp verification"
+    })
     async login(@Body() loginDto: LoginDto) {
         const result = await this.authService.signIn(loginDto)
         return new CustomApiResponse(result, null)
     }
 
+    @ApiOperation({ summary: "User Registration" })
+    @ApiResponse({
+        status: 201,
+        description: "Registered successfully"
+    })
     @HttpCode(HttpStatus.OK)
     @Post('register')
     async register(@Body() registerDto: CreateUserDto) {
@@ -33,18 +46,35 @@ export class AuthController {
     }
 
 
+    @ApiOperation({ summary: "Forgot password" })
+    @ApiResponse({
+        status: 200,
+        description: "Password_reset request accepted"
+    })
     @Post('forget-password')
-    async requestPasswordReset(@Body() email: ForgotPWordDto){
+    async requestPasswordReset(@Body() email: ForgotPWordDto) {
         const result = await this.authService.requestToResetPassword(email.email)
         return new CustomApiResponse("Please confirm your request on email", null)
     }
 
+    @ApiOperation({ summary: "Reset password" })
+    @ApiResponse({
+        status: 201,
+        description: "Password reset successfully"
+    })
     @Put('reset-password')
     async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
         const result = await this.authService.changePassword(changePasswordDto)
         return new CustomApiResponse("Reset password successfully", result)
     }
 
+
+
+    @ApiOperation({ summary: "OTP verification" })
+    @ApiResponse({
+        status: 200,
+        description: "Logged in successfully"
+    })
     @Post('verify-otp')
     @HttpCode(HttpStatus.CREATED)
     async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
@@ -53,6 +83,11 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard)
+    @ApiOperation({summary: "Your profile"})
+    @ApiResponse({
+        status: 200,
+        description: "Retrieved successfully"
+    })
     @Get('profile')
     getProfile(@Req() req: any) {
         return new CustomApiResponse("Your profile", req.user)
