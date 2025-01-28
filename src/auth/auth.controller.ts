@@ -41,7 +41,7 @@ export class AuthController {
 
     @Put('reset-password')
     async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
-        const result  await this.authService.changePassword(changePasswordDto)
+        const result = await this.authService.changePassword(changePasswordDto)
         return new CustomApiResponse("Reset password successfully", result)
     }
 
