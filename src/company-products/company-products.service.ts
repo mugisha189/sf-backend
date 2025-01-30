@@ -1,26 +1,70 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCompanyProductDto } from './dto/create-company-product.dto';
 import { UpdateCompanyProductDto } from './dto/update-company-product.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CompanyProduct } from './entities/company-product.entity';
+import { Repository } from 'typeorm';
+import { NODATA } from 'dns';
 
 @Injectable()
 export class CompanyProductsService {
-  create(createCompanyProductDto: CreateCompanyProductDto) {
-    return 'This action adds a new companyProduct';
+
+  constructor(@InjectRepository(CompanyProduct) private companyProductRepo: Repository<CompanyProduct>) { }
+
+  async create(createCompanyProductDto: CreateCompanyProductDto): Promise<CompanyProduct> {
+    try {
+      const companyProduct = new CompanyProduct(createCompanyProductDto)
+      return this.companyProductRepo.save(companyProduct);
+    } catch (error) {
+      throw error
+    }
   }
 
-  findAll() {
-    return `This action returns all companyProducts`;
+  async findAll(): Promise<CompanyProduct[]> {
+    try {
+      const products = await this.companyProductRepo.find()
+      return products
+    } catch (error) {
+      throw error
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} companyProduct`;
+  async findOne(id: string): Promise<CompanyProduct> {
+    const product = await this.companyProductRepo.findOneBy({ id })
+    if (!product) throw new NotFoundException("Company product not found");
+
+    return product;
   }
 
-  update(id: number, updateCompanyProductDto: UpdateCompanyProductDto) {
-    return `This action updates a #${id} companyProduct`;
+  async update(id: string, updateCompanyProductDto: UpdateCompanyProductDto) {
+    try {
+      const isUpdated = await this.companyProductRepo.update(id, updateCompanyProductDto)
+      if (isUpdated.affected === 0) throw new NotFoundException("Company product not found")
+        
+        const updated = await this.companyProductRepo.findOneBy({ id })
+        if (!updated) throw new NotFoundException("Company product not found")
+          return updated;
+        
+      } catch (error) {
+        throw error 
+      }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} companyProduct`;
+  async remove(id: string):Promise<Boolean> {
+    try {
+      const isDeleted = await this.companyProductRepo.delete({id})
+      return isDeleted.affected !==0
+    } catch (error) {
+      throw error 
+    }
+  }
+
+  async removeAll():Promise<Boolean> {
+    try {
+      const areDeleted = await this.companyProductRepo.delete({})
+      return areDeleted.affected !==0
+    } catch (error) {
+      throw error 
+    }
   }
 }
