@@ -65,7 +65,7 @@ export class PartnerCompanyController {
   })
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async removePartnerComps(@Param('id') id: string) {
+  async removePartnerComp(@Param('id') id: string) {
     const result = await this.partnerCompanyService.remove(id);
     return new CustomApiResponse("Delete partner company successfully", result)
   }
