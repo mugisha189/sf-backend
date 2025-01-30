@@ -12,10 +12,25 @@ async function bootstrap() {
     .setTitle('Api Documentation')
     .setDescription("The SF_BACKEND api documentation")
     .setVersion('1.0')
+    .addBearerAuth({
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
+      name: 'Authorization',
+      in: 'header',
+      description: "Enter your JWT token"
+    },
+    'access-token'
+  )
     .build();
 
+
   const documentFactory = () => SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api-docs', app, documentFactory)
+  SwaggerModule.setup('api-docs', app, documentFactory, {
+    swaggerOptions: {
+      security: [{'access-token': []}]
+    }
+  })
 
   const port =  process.env.PORT ?? 3000
   await app.listen(port, ()=>{
