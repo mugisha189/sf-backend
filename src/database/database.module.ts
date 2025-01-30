@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CompanyProduct } from 'src/company-products/entities/company-product.entity';
 import { ConfirmationToken } from 'src/confirmationToken/entity/token.entity';
 import { OtpEntity } from 'src/otp/entity/otp.entity';
+import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
+import { SavingProduct } from 'src/saving-product/entities/saving-product.entity';
 import { Users } from 'src/users/entity/user.entity';
 
 @Module({
@@ -16,7 +19,7 @@ import { Users } from 'src/users/entity/user.entity';
                 port: configService.get('DATABASE_PORT'),
                 password: configService.get('DATABASE_PASSWORD'),
                 username: configService.get('DATABASE_USER'),
-                entities: [Users, OtpEntity, ConfirmationToken],
+                entities: [Users, OtpEntity, ConfirmationToken, CompanyProduct, PartnerCompany, SavingProduct],
                 // entities: [__dirname + '/../**/*.entity{.ts}'],
                 database: configService.get('DATABASE_NAME'),
                 synchronize: true,
