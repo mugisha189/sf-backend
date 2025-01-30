@@ -42,7 +42,7 @@ export class SavingProductService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string):Promise<SavingProduct> {
     try {
       const savingProduct = await this.savingProductRepo.findOneBy({ id })
       if (!savingProduct) throw new NotFoundException("Saving product not found")
@@ -53,14 +53,17 @@ export class SavingProductService {
     }
   }
 
-  async update(id: string, updateSavingProductDto: UpdateSavingProductDto) {
+  async update(id: string, updateSavingProductDto: UpdateSavingProductDto):Promise<SavingProduct> {
     try {
       const toBeUpdated = await this.savingProductRepo.update(id, updateSavingProductDto)
       if (toBeUpdated.affected === 0) {
         throw new NotFoundException("Saving product not found")
       }
 
-      return this.savingProductRepo.findOneBy({ id });
+      const updated = await this.savingProductRepo.findOneBy({ id });
+      if(!updated) throw new NotFoundException("Saving product not found");
+
+      return updated;
     } catch (error) {
       throw error
     }
