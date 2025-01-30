@@ -23,7 +23,7 @@ export class EmailService {
     async sendOtpToEmail(email: string):Promise<boolean> {
         try {
             const otpCode = randomInt(100000, 999999);
-            const expiresAt = new Date(Date.now() + 1 * 30 * 1000); //30 seconds expiry
+            const expiresAt = new Date(Date.now() + 1 * 60 * 1000); //1 seconds expiry
 
             if (!this.isValidEmail(email)) throw new UnauthorizedException("Email is not valid")
             // Delete all OTP passwords of the email
