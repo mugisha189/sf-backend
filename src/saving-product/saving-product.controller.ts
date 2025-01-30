@@ -9,11 +9,11 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 export class SavingProductController {
   constructor(private readonly savingProductService: SavingProductService) { }
 
-  @ApiOperation({ summary: "Create a saving product" })
-  @ApiResponse({
-    status: 201,
-    description: "created successfully"
-  })
+    @ApiOperation({ summary: "Create a saving product" })
+    @ApiResponse({
+      status: 201,
+      description: "created successfully"
+    })
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createSavingProduct(@Body() createSavingProductDto: CreateSavingProductDto) {
