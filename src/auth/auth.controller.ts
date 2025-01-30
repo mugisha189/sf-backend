@@ -9,7 +9,7 @@ import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
 import { EmailService } from 'src/email/email.service';
 import { VerifyOtpDto } from 'src/otp/dto/verifyOtp.dto';
 import { ForgotPWordDto } from 'src/users/dto/forget-password.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Users } from 'src/users/entity/user.entity';
 
 @Controller('auth')
@@ -82,6 +82,7 @@ export class AuthController {
         return new CustomApiResponse("Welcome back", result.entity, result.token)
     }
 
+    @ApiBearerAuth('access-token')
     @UseGuards(AuthGuard)
     @ApiOperation({summary: "Your profile"})
     @ApiResponse({
