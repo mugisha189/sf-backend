@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNegative, IsNotEmpty, IsString } from "class-validator";
 import { CHARGE_TYPE } from "src/constants/constants";
 
 
@@ -21,7 +21,7 @@ export class CreateSavingProductDto {
     productDescription: string
 
     @IsNotEmpty()
-    @IsString()
+    @IsEnum(CHARGE_TYPE)
     @ApiProperty()
     cashBackChargeType: typeof CHARGE_TYPE
 
@@ -46,7 +46,7 @@ export class CreateSavingProductDto {
     entryPointName: number
 
     @IsNotEmpty()
-    @IsString()
+    @IsEnum(CHARGE_TYPE)
     @ApiProperty()
     entryPointChargeType: typeof CHARGE_TYPE
 
