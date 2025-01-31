@@ -6,8 +6,7 @@ import { ConfirmationToken } from 'src/confirmationToken/entity/token.entity';
 import { OtpEntity } from 'src/otp/entity/otp.entity';
 import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
 import { SavingProduct } from 'src/saving-product/entities/saving-product.entity';
-import { Users } from 'src/users/entity/user.entity';
-
+import { Users } from 'src/users/entity/users.entity';
 @Module({
     imports: [
         ConfigModule.forRoot(),

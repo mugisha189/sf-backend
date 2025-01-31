@@ -51,8 +51,9 @@ export class AuthService {
             // console.log('create use dto ', createUserDto);
             const createdUser = await this.usersService.createUser(createUserDto)
             const payload = {
-                sub: createdUser.id,
-                email: createdUser.email
+                userId: createdUser.id,
+                email: createdUser.email,
+                role: createdUser.role,
             }
 
             return {

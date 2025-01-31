@@ -117,7 +117,8 @@ export class EmailService {
 
             const payload = {
                 sub: user.id,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
             // TODO: Generate a JWT and return it
             const token = await this.jwtService.signAsync(payload)

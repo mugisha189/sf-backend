@@ -1,16 +1,14 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from '../guards/auth.guard';
 import { LoginDto } from 'src/users/dto/login.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UUID } from 'typeorm/driver/mongodb/bson.typings';
 import { ChangePasswordDto } from 'src/users/dto/change-password.dto';
 import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
 import { EmailService } from 'src/email/email.service';
 import { VerifyOtpDto } from 'src/otp/dto/verifyOtp.dto';
 import { ForgotPWordDto } from 'src/users/dto/forget-password.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Users } from 'src/users/entity/user.entity';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -84,7 +82,7 @@ export class AuthController {
 
     @ApiBearerAuth('access-token')
     @UseGuards(AuthGuard)
-    @ApiOperation({summary: "Your profile"})
+    @ApiOperation({ summary: "Your profile" })
     @ApiResponse({
         status: 200,
         description: "Retrieved successfully"

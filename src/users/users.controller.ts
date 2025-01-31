@@ -1,13 +1,17 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { UUID } from 'typeorm/driver/mongodb/bson.typings';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/roles.decorator';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { UserRole } from 'src/constants/role.enum';
 
 
 @Controller('users')
 @ApiTags("users")
+@UseGuards(AuthGuard, RolesGuard)
+@ApiBearerAuth('access-token')
 export class UsersController {
     constructor(private userService: UsersService){}
 
@@ -17,6 +21,7 @@ export class UsersController {
         description: "Retrieved successfully"
     })
     @Get(':id')
+    @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
     async getUserById(@Param('id') id: string){
         return this.userService.findUserById(id)
@@ -30,6 +35,7 @@ export class UsersController {
     // @UseGuards(AuthGuard)
     @Get()
     @HttpCode(HttpStatus.OK)
+    @Roles(UserRole.SUPER_ADMIN)
     async getAllUsers(){
         return this.userService.findAll()
     }
@@ -39,8 +45,8 @@ export class UsersController {
         status: 200,
         description: "Updated successfully"
     })
-    @UseGuards(AuthGuard)
     @Put(':id')
+    @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
     async updateUser(@Param('id') id: string,@Body() updateUserDto: UpdateUserDto){
         return this.userService.updateUser(id,updateUserDto)
@@ -53,6 +59,7 @@ export class UsersController {
     })
     // @UseGuards(AuthGuard)
     @Delete(':id')
+    @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
     async deleteUser(@Param('id') id: string){
         return this.userService.deleteUser(id)
@@ -65,6 +72,7 @@ export class UsersController {
     })
     // @UseGuards(AuthGuard)
     @Delete()
+    @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
     async deleteAllUser(){
         return this.userService.deleteAllUser()
