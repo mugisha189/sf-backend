@@ -23,7 +23,7 @@ export class UsersService {
 
       // console.log('creteUser password ', createUserDto.password );
       if (createUserDto.password !== createUserDto.confirmPassword) {
-        throw new BadRequestException()
+        throw new BadRequestException("Password must match")
       }
       const user = new Users()
 
@@ -32,17 +32,13 @@ export class UsersService {
       user.email = createUserDto.email;
       user.phoneNumber = createUserDto.phoneNumber;
       user.nationalId = createUserDto.nationalId;
+      user.role= createUserDto.role;
       user.password = await bcrypt.hash(createUserDto.password, 10);
-      // user.password = createUserDto.password
 
       return await this.userRepo.save(user)
 
     } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw new BadRequestException(error.message)
-      }
-
-      throw error
+      throw new BadRequestException(error.message)
     }
   }
 
@@ -104,8 +100,9 @@ export class UsersService {
   }
 
 
-  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<Users> {
+  async updateUser(id: string, updateUserDto: UpdateUserDto) {
     try {
+      console.log('update dto', updateUserDto);
       const user = await this.userRepo.findOne({ where: { id } })
       if (!user) throw new NotFoundException("User not found");
 
@@ -114,6 +111,7 @@ export class UsersService {
       }
 
       const saltRounds = 10
+
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds)
 
       Object.assign(user, updateUserDto)
@@ -125,24 +123,23 @@ export class UsersService {
     }
   }
 
-  async deleteUser(id: string): Promise<{ affected?: number }> {
+  async deleteUser(id: string): Promise<Boolean> {
     try {
       if (!this.userRepo.findOne({ where: { id } })) throw new NotFoundException('User not found')
       const result = await this.userRepo.delete({ id })
 
-      return { affected: result.affected ?? undefined }
+      return result.affected !== 0;
 
     } catch (error) {
       throw error
     }
   }
 
-  async deleteAllUser(): Promise<{ affected?: number }> {
+  async deleteAllUser(): Promise<Boolean> {
     try {
       const result = await this.userRepo.delete({})
 
-      return { affected: result.affected ?? undefined }
-
+      return result.affected !== 0;
     } catch (error) {
       throw error
     }

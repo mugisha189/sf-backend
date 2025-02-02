@@ -11,9 +11,11 @@ export class CompanyProductsService {
 
   constructor(@InjectRepository(CompanyProduct) private companyProductRepo: Repository<CompanyProduct>) { }
 
-  async create(createCompanyProductDto: CreateCompanyProductDto): Promise<CompanyProduct> {
+  async create(createCompanyProductDto: CreateCompanyProductDto) {
     try {
+      // console.log('request ', req);
       const companyProduct = new CompanyProduct(createCompanyProductDto)
+
       return this.companyProductRepo.save(companyProduct);
     } catch (error) {
       throw error
@@ -36,8 +38,9 @@ export class CompanyProductsService {
     return product;
   }
 
-  async update(id: string, updateCompanyProductDto: UpdateCompanyProductDto) {
+  async update( id: string, updateCompanyProductDto: UpdateCompanyProductDto) {
     try {
+      // console.log('Req ', req);
       const isUpdated = await this.companyProductRepo.update(id, updateCompanyProductDto)
       if (isUpdated.affected === 0) throw new NotFoundException("Company product not found")
         

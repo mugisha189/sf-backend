@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNegative, IsNotEmpty, IsString } from "class-validator";
-import { CHARGE_TYPE } from "src/constants/constants";
+import { isEnum, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { CHARGE_TYPE, COMPANY_TYPE } from "src/constants/constants";
 
 
 export class CreateSavingProductDto {
@@ -8,6 +8,11 @@ export class CreateSavingProductDto {
     @IsString()
     @ApiProperty()
     savingProductName: string
+
+    @IsNotEmpty()
+    @IsEnum(COMPANY_TYPE, { message: 'Company type must be either TELECOM,PETROL_STATIONS or SUPER_MARKET' })
+    @ApiProperty()
+    companyType: COMPANY_TYPE
 
     @IsNotEmpty()
     @IsString()
@@ -21,37 +26,37 @@ export class CreateSavingProductDto {
     productDescription: string
 
     @IsNotEmpty()
-    @IsEnum(CHARGE_TYPE)
+    @IsEnum(CHARGE_TYPE, { message: 'Charge type must be either PERCENTAGE or FIXED' })
     @ApiProperty()
-    cashBackChargeType: typeof CHARGE_TYPE
+    cashBackChargeType: CHARGE_TYPE
 
     @IsNotEmpty()
-    @IsString()
+    @IsPositive()
     @ApiProperty()
     cashBackChargeValue: number
 
     @IsNotEmpty()
-    @IsString()
+    @IsPositive()
     @ApiProperty()
     cashBackMinimumCash: number
 
     @IsNotEmpty()
-    @IsString()
+    @IsPositive()
     @ApiProperty()
     cashBackMaximumCash: number
 
     @IsNotEmpty()
     @IsString()
     @ApiProperty()
-    entryPointName: number
+    entryPointName: string
 
     @IsNotEmpty()
-    @IsEnum(CHARGE_TYPE)
+    @IsEnum(CHARGE_TYPE, { message: 'Charge type must be either PERCENTAGE or FIXED' })
     @ApiProperty()
-    entryPointChargeType: typeof CHARGE_TYPE
+    entryPointChargeType: CHARGE_TYPE
 
     @IsNotEmpty()
-    @IsString()
+    @IsPositive()
     @ApiProperty()
     entryPointChargeValue: number
 

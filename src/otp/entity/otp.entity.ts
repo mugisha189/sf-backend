@@ -1,5 +1,5 @@
 import { OTP_CODE_STATUS } from "src/constants/constants";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { UUID } from "typeorm/driver/mongodb/bson.typings";
 
 @Entity()
@@ -19,6 +19,10 @@ export class OtpEntity {
 
     @Column({type: 'enum', enum: Object.values(OTP_CODE_STATUS), default: OTP_CODE_STATUS.AVAILABLE})
     otpStatus: OTPCodeStatus
+
+    @CreateDateColumn({type: "timestamptz"})
+    createdAt: Date
+
 }
 
 type OTPCodeStatus = keyof typeof OTP_CODE_STATUS; // "AVAILABLE" | "USED"

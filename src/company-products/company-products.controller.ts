@@ -1,11 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, UseGuards, Put, Req } from '@nestjs/common';
 import { CompanyProductsService } from './company-products.service';
 import { CreateCompanyProductDto } from './dto/create-company-product.dto';
 import { UpdateCompanyProductDto } from './dto/update-company-product.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { UserRole } from 'src/constants/role.enum';
 
 @Controller('company-products')
+@UseGuards(AuthGuard, RolesGuard)
+@ApiBearerAuth('access-token')
 export class CompanyProductsController {
   constructor(private readonly companyProductsService: CompanyProductsService) {}
 
@@ -15,9 +21,10 @@ export class CompanyProductsController {
     description: "created successfully"
   })
   @Post()
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  async createCompanyProduct(@Body() createCompanyProductDto: CreateCompanyProductDto) {
-    const result = await this.companyProductsService.create(createCompanyProductDto);
+  async createCompanyProduct(@Body() createCompanyProductDto: CreateCompanyProductDto, @Req() req: any) {
+    const result = await this.companyProductsService.create( createCompanyProductDto);
     return new CustomApiResponse("Created  company product successfully", result)
   }
 
@@ -27,6 +34,7 @@ export class CompanyProductsController {
     description: "retrieved all successfully"
   })
   @Get()
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN, UserRole.SUBSCRIBER)
   @HttpCode(HttpStatus.OK)
   async findAllCompanyProducts() {
     const result = await this.companyProductsService.findAll();
@@ -39,6 +47,7 @@ export class CompanyProductsController {
     description: "retrieved successfully"
   })
   @Get(':id')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN, UserRole.SUBSCRIBER)
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
     const result = await this.companyProductsService.findOne(id);
@@ -50,10 +59,11 @@ export class CompanyProductsController {
     status: 201,
     description: "updated successfully"
   })
-  @Patch(':id')
+  @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   async update(@Param('id') id: string, @Body() updateCompanyProductDto: UpdateCompanyProductDto) {
-    const result = await this.companyProductsService.update(id, updateCompanyProductDto);
+    const result = await this.companyProductsService.update( id, updateCompanyProductDto);
     return new CustomApiResponse("Updated company product successfully", result)
   }
 
@@ -63,6 +73,7 @@ export class CompanyProductsController {
     description: "deleted successfully"
   })
   @Delete(':id')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   @HttpCode(HttpStatus.OK)
   async removePartnerComp(@Param('id') id: string) {
     const result = await this.companyProductsService.remove(id);
@@ -76,6 +87,7 @@ export class CompanyProductsController {
   })
   @Delete()
   @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   async removeAllParternComps(id: string) {
     const result = await this.companyProductsService.removeAll();
     return new CustomApiResponse("Delete all company product successfully", result)

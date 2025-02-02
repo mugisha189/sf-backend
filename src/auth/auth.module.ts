@@ -17,7 +17,7 @@ import { ConfirmationTokenModule } from 'src/confirmationToken/confirmToken.modu
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
-      signOptions: {expiresIn: '300s'}
+      signOptions: {expiresIn: '6000s'}
     }), 
 
     TypeOrmModule.forFeature([OtpEntity]),

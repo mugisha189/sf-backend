@@ -6,6 +6,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { Roles } from 'src/decorators/roles.decorator';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { UserRole } from 'src/constants/role.enum';
+import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
 
 
 @Controller('users')
@@ -24,7 +25,8 @@ export class UsersController {
     @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
     async getUserById(@Param('id') id: string){
-        return this.userService.findUserById(id)
+        const result = await this.userService.findUserById(id)
+        return new CustomApiResponse("Retrived successfully", result)
     }
 
     @ApiOperation({summary: "Fetch all users"})
@@ -35,9 +37,11 @@ export class UsersController {
     // @UseGuards(AuthGuard)
     @Get()
     @HttpCode(HttpStatus.OK)
-    @Roles(UserRole.SUPER_ADMIN)
+    @Roles(UserRole.SUPER_ADMIN, UserRole.SUBSCRIBER)
     async getAllUsers(){
-        return this.userService.findAll()
+        const result = await this.userService.findAll()
+        return new CustomApiResponse("Retrived all successfully", result)
+
     }
 
     @ApiOperation({summary: "Update user"})
@@ -49,7 +53,9 @@ export class UsersController {
     @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
     async updateUser(@Param('id') id: string,@Body() updateUserDto: UpdateUserDto){
-        return this.userService.updateUser(id,updateUserDto)
+        const result = await this.userService.updateUser(id,updateUserDto)
+        return new CustomApiResponse("Updated user successfully", result)
+
     }
 
     @ApiOperation({summary: "Delete user by userId"})
@@ -62,7 +68,9 @@ export class UsersController {
     @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
     async deleteUser(@Param('id') id: string){
-        return this.userService.deleteUser(id)
+        const result = await this.userService.deleteUser(id)
+        return new CustomApiResponse("Deleted successfully", result)
+
     }
 
     @ApiOperation({summary: "Delete all users"})
@@ -72,9 +80,11 @@ export class UsersController {
     })
     // @UseGuards(AuthGuard)
     @Delete()
-    @Roles(UserRole.SUPER_ADMIN)
+    @Roles(UserRole.SUPER_ADMIN, UserRole.SUBSCRIBER)
     @HttpCode(HttpStatus.OK)
     async deleteAllUser(){
-        return this.userService.deleteAllUser()
+        const result = await this.userService.deleteAllUser()
+        return new CustomApiResponse("Deleted all successfully", result)
+
     }
 }

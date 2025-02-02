@@ -7,14 +7,14 @@ export const OTP_CODE_STATUS = {
     USED: "USED",
 } as const
 
-export const CHARGE_TYPE = {
-    PERCENTAGE: "PERCENTAGE",
-    FIXED: "FIXED",
-} as const
+export enum CHARGE_TYPE {
+    PERCENTAGE= "PERCENTAGE",
+    FIXED ="FIXED",
+} 
 
-export const COMPANY_TYPE = {
-    TELECOM: "TELECOM",
-    PETROL_STATIONS: "PETROL_STATIONS",
-    SUPER_MARKET: "SUPER_MARKET"
+export enum COMPANY_TYPE  {
+    TELECOM= "TELECOM",
+    PETROL_STATIONS= "PETROL_STATIONS",
+    SUPER_MARKET= "SUPER_MARKET"
 }
 

@@ -7,6 +7,7 @@ import { EmailModule } from './email/email.module';
 import { SavingProductModule } from './saving-product/saving-product.module';
 import { PartnerCompanyModule } from './partner-company/partner-company.module';
 import { CompanyProductsModule } from './company-products/company-products.module';
+import { ProductPurchasesModule } from './product-purchases/product-purchases.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CompanyProductsModule } from './company-products/company-products.modul
     SavingProductModule,
     PartnerCompanyModule,
     CompanyProductsModule,
+    ProductPurchasesModule,
   ],
 })
 export class AppModule {}

@@ -1,9 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 import { COMPANY_TYPE } from "src/constants/constants";
 
-export class CreateCompanyProductDto {
-    
+export class CreateProductPurchaseDto {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    savingProductName: string
+
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
@@ -17,16 +21,27 @@ export class CreateCompanyProductDto {
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    packageName: string
+    product: string
 
     @ApiProperty()
-    @IsNumber()
+    @IsPositive()
     @IsNotEmpty()
-    packageMaximumAmount: number
+    trxAmount: number
 
     @ApiProperty()
-    @IsString()
+    @IsPositive()
     @IsNotEmpty()
-    packageDescription: string
+    productAmount: number
 
+    @ApiProperty()
+    @IsPositive()
+    @IsNotEmpty()
+    sfAmount: number
+
+    @ApiProperty()
+    @IsPositive()
+    @IsNotEmpty()
+    ejoHezaAmount: number
+
+    
 }

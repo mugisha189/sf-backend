@@ -1,12 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Put } from '@nestjs/common';
 import { PartnerCompanyService } from './partner-company.service';
 import { CreatePartnerCompanyDto } from './dto/create-partner-company.dto';
 import { UpdatePartnerCompanyDto } from './dto/update-partner-company.dto';
 import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { UserRole } from 'src/constants/role.enum';
 
 @Controller('partner-company')
+@UseGuards(AuthGuard, RolesGuard)
+@ApiBearerAuth('access-token')
 export class PartnerCompanyController {
   constructor(private readonly partnerCompanyService: PartnerCompanyService) { }
 
@@ -16,6 +21,7 @@ export class PartnerCompanyController {
     description: "created successfully"
   })
   @Post()
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createPartnerCompanyDto: CreatePartnerCompanyDto) {
     const result = await this.partnerCompanyService.create(createPartnerCompanyDto);
@@ -28,6 +34,7 @@ export class PartnerCompanyController {
     description: "retrieved all successfully"
   })
   @Get()
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   async findAll() {
     const result = await this.partnerCompanyService.findAll();
@@ -40,6 +47,7 @@ export class PartnerCompanyController {
     description: "retrieved successfully"
   })
   @Get(':id')
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
     const result = await this.partnerCompanyService.findOne(id);
@@ -51,7 +59,8 @@ export class PartnerCompanyController {
     status: 201,
     description: "updated successfully"
   })
-  @Patch(':id')
+  @Put(':id')
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() updatePartnerCompanyDto: UpdatePartnerCompanyDto) {
     const result = await this.partnerCompanyService.update(id, updatePartnerCompanyDto);
@@ -64,6 +73,7 @@ export class PartnerCompanyController {
     description: "deleted successfully"
   })
   @Delete(':id')
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   async removePartnerComp(@Param('id') id: string) {
     const result = await this.partnerCompanyService.remove(id);
@@ -76,6 +86,7 @@ export class PartnerCompanyController {
     description: "deleted successfully"
   })
   @Delete()
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   async removeAllParternComps(id: string) {
     const result = await this.partnerCompanyService.removeAll();

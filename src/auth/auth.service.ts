@@ -61,7 +61,7 @@ export class AuthService {
                 token: await this.jwtService.signAsync(payload)
             }
         } catch (error) {
-            throw error
+            throw new BadRequestException(error.message)
         }
     }
 

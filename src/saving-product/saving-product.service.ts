@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSavingProductDto } from './dto/create-saving-product.dto';
 import { UpdateSavingProductDto } from './dto/update-saving-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,23 +12,12 @@ export class SavingProductService {
   ) { }
   async create(createSavingProductDto: CreateSavingProductDto): Promise<SavingProduct> {
     try {
-      const savingProduct = new SavingProduct({
-        savingProductName: createSavingProductDto.savingProductName,
-        companyName: createSavingProductDto.companyName,
-        productDescription: createSavingProductDto.productDescription,
-        cashBackChargeType: createSavingProductDto.cashBackChargeType,
-        cashBackChargeValue: createSavingProductDto.cashBackChargeValue,
-        cashBackMaximumCash: createSavingProductDto.cashBackMaximumCash,
-        cashBackMinimumCash: createSavingProductDto.cashBackMinimumCash,
-        entryPointName: createSavingProductDto.entryPointName,
-        entryPointChargeType: createSavingProductDto.entryPointChargeType,
-        entryPointChargeValue: createSavingProductDto.entryPointChargeValue
-      })
+      const savingProduct = new SavingProduct(createSavingProductDto)
 
       return await this.savingProductRepo.save(savingProduct)
 
     } catch (error) {
-      throw error
+      throw new BadRequestException(error.message)
     }
 
   }

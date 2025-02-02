@@ -2,11 +2,21 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import helmet from 'helmet'
+import { CustomExceptionFilter } from './exceptions/custom-exception.filter';
+import { TypeOrmExceptionFilter } from './exceptions/QueryFailedException.filter';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {cors: true});
   app.setGlobalPrefix('api')
   app.use(helmet())
+  app.useGlobalFilters(new TypeOrmExceptionFilter());
+  app.useGlobalFilters(new CustomExceptionFilter())
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
 
   const config = new DocumentBuilder()
     .setTitle('Api Documentation')

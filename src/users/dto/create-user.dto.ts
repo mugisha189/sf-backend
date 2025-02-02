@@ -41,23 +41,25 @@ export class CreateUserDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    @Matches(passwordRegEx, {
-        message: `Password must contain Minimum 8 and maximum 20 characters, 
-    at least one uppercase letter, 
-    one lowercase letter, 
-    one number and 
-    one special character`,
-    })
+    @IsString()
+    // @Matches(passwordRegEx, {
+    //     message: `Password must contain Minimum 8 and maximum 20 characters, 
+    // at least one uppercase letter, 
+    // one lowercase letter, 
+    // one number and 
+    // one special character`,
+    // })
     password: string
 
     @ApiProperty()
     @IsNotEmpty()
-    @Matches(passwordRegEx, {
-        message: `Password must contain Minimum 8 and maximum 20 characters, 
-    at least one uppercase letter, 
-    one lowercase letter, 
-    one number and 
-    one special character`,
-    })
+    @IsString()
+    // @Matches(passwordRegEx, {
+    //     message: `Password must contain Minimum 8 and maximum 20 characters, 
+    // at least one uppercase letter, 
+    // one lowercase letter, 
+    // one number and 
+    // one special character`,
+    // })
     confirmPassword: string
 }
