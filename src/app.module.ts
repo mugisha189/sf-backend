@@ -8,6 +8,7 @@ import { SavingProductModule } from './saving-product/saving-product.module';
 import { PartnerCompanyModule } from './partner-company/partner-company.module';
 import { CompanyProductsModule } from './company-products/company-products.module';
 import { ProductPurchasesModule } from './product-purchases/product-purchases.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ProductPurchasesModule } from './product-purchases/product-purchases.mo
     PartnerCompanyModule,
     CompanyProductsModule,
     ProductPurchasesModule,
+    CloudinaryModule,
   ],
 })
 export class AppModule {}

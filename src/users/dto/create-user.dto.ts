@@ -1,5 +1,5 @@
 import { ApiAcceptedResponse, ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Matches, MinLength } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from "class-validator";
 import { UserRole } from "src/constants/role.enum";
 
 const passwordRegEx =
@@ -62,4 +62,8 @@ export class CreateUserDto {
     // one special character`,
     // })
     confirmPassword: string
+
+    @ApiProperty({ type: 'string', format: 'binary', required: false, description: 'User profile image'})
+    @IsOptional()
+    file?: Express.Multer.File;
 }

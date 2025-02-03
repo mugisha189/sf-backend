@@ -13,6 +13,7 @@ import { ConfirmationTokenService } from 'src/confirmationToken/confirmToken.ser
 import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { ChangePasswordDto } from 'src/users/dto/change-password.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +23,8 @@ export class AuthService {
         private emailService: EmailService,
         private confirmTokenService: ConfirmationTokenService,
         @InjectRepository(OtpEntity) private otpRepo: Repository<OtpEntity>
-    ) { }
+    ) {
+     }
 
     async signIn(loginDto: LoginDto): Promise<string> {
         try {
@@ -46,10 +48,9 @@ export class AuthService {
 
 
 
-    async register(createUserDto: CreateUserDto): Promise<any> {
+    async register(createUserDto: CreateUserDto, file: Express.Multer.File): Promise<any> {
         try {
-            // console.log('create use dto ', createUserDto);
-            const createdUser = await this.usersService.createUser(createUserDto)
+            const createdUser = await this.usersService.createUser(createUserDto, file)
             const payload = {
                 userId: createdUser.id,
                 email: createdUser.email,

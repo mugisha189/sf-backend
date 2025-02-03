@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/roles.decorator';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { UserRole } from 'src/constants/role.enum';
 import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 
 @Controller('users')
@@ -52,8 +53,10 @@ export class UsersController {
     @Put(':id')
     @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
-    async updateUser(@Param('id') id: string,@Body() updateUserDto: UpdateUserDto){
-        const result = await this.userService.updateUser(id,updateUserDto)
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('file'))
+    async updateUser(@Param('id') id: string,@Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File ){
+        const result = await this.userService.updateUser(id,updateUserDto, file)
         return new CustomApiResponse("Updated user successfully", result)
 
     }

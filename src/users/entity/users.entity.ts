@@ -24,6 +24,13 @@ export class Users {
     @Column({ type: 'varchar' })
     phoneNumber: string
 
+    @Column({ type: 'varchar' })
+    avatarUrl: string
+
+    @Column({ type: 'varchar' })
+    avatarPublicId: string
+
+
     @Column({ type: 'enum', enum: Object.values(UserRole) })
     @IsEnum(UserRole, { message: 'role must be SUPER_ADMIN, COMPANY_ADMIN, or SUBSCRIBER' })
     @IsNotEmpty()

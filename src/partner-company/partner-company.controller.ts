@@ -15,6 +15,18 @@ import { UserRole } from 'src/constants/role.enum';
 export class PartnerCompanyController {
   constructor(private readonly partnerCompanyService: PartnerCompanyService) { }
 
+  @ApiOperation({ summary: "Get all image  urls" })
+  @ApiResponse({
+    status: 200,
+    description: "retrieved all successfully"
+  })
+  @Get('all')
+  // @Roles(UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  async getAllImages() {
+    const result = await this.partnerCompanyService.getImages();
+    return new CustomApiResponse("Fetched all image urls successfully", result)
+  }
   @ApiOperation({ summary: "Create a partner company" })
   @ApiResponse({
     status: 201,
@@ -30,7 +42,7 @@ export class PartnerCompanyController {
 
   @ApiOperation({ summary: "Get all partner companies" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "retrieved all successfully"
   })
   @Get()
@@ -43,7 +55,7 @@ export class PartnerCompanyController {
 
   @ApiOperation({ summary: "Get single partner company" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "retrieved successfully"
   })
   @Get(':id')
@@ -56,7 +68,7 @@ export class PartnerCompanyController {
 
   @ApiOperation({ summary: "Update partner company" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "updated successfully"
   })
   @Put(':id')
@@ -69,7 +81,7 @@ export class PartnerCompanyController {
 
   @ApiOperation({ summary: "Delete single partner companies" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "deleted successfully"
   })
   @Delete(':id')
@@ -82,7 +94,7 @@ export class PartnerCompanyController {
 
   @ApiOperation({ summary: "Delete all partner companies" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "deleted successfully"
   })
   @Delete()
@@ -92,4 +104,7 @@ export class PartnerCompanyController {
     const result = await this.partnerCompanyService.removeAll();
     return new CustomApiResponse("Delete all partner companies successfully", result)
   }
+
+
+  
 }

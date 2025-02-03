@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { LoginDto } from 'src/users/dto/login.dto';
@@ -8,7 +8,8 @@ import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
 import { EmailService } from 'src/email/email.service';
 import { VerifyOtpDto } from 'src/otp/dto/verifyOtp.dto';
 import { ForgotPWordDto } from 'src/users/dto/forget-password.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -38,8 +39,13 @@ export class AuthController {
     })
     @HttpCode(HttpStatus.OK)
     @Post('register')
-    async register(@Body() registerDto: CreateUserDto) {
-        const result = await this.authService.register(registerDto)
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(FileInterceptor('file'))
+    async register(@Body() registerDto: CreateUserDto, @UploadedFile() file?: Express.Multer.File) {
+        // console.log('registerdto ', registerDto);
+        // console.log('file ', file);
+        if(!file ) throw new NotFoundException("No file uploaded")
+        const result = await this.authService.register(registerDto, file)
         return new CustomApiResponse("Registered successfully", result.entity, result.token)
     }
 

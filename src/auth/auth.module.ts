@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OtpEntity } from '../otp/entity/otp.entity';
 import { EmailModule } from 'src/email/email.module';
 import { ConfirmationTokenModule } from 'src/confirmationToken/confirmToken.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   controllers: [AuthController],
@@ -22,7 +23,8 @@ import { ConfirmationTokenModule } from 'src/confirmationToken/confirmToken.modu
 
     TypeOrmModule.forFeature([OtpEntity]),
     EmailModule,
-    ConfirmationTokenModule
+    ConfirmationTokenModule,
+    
     
   ]
 })
