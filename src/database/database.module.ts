@@ -22,7 +22,7 @@ import { Users } from 'src/users/entity/users.entity';
                 entities: [Users, OtpEntity, ConfirmationToken, CompanyProduct, PartnerCompany, SavingProduct, ProductPurchase],
                 // entities: [__dirname + '/../**/*.entity{.ts}'],
                 database: configService.get('DATABASE_NAME'),
-                synchronize: true,
+                synchronize: false,
                 logging: true,
             }),
             inject: [ConfigService]
