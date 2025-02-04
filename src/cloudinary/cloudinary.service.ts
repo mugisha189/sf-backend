@@ -59,10 +59,11 @@ export class CloudinaryService {
 
   async deleteFile(publicId: string): Promise<boolean> {
     try {
+      console.log('The avatar public id is ', publicId);
       const result = await cloudinary.uploader.destroy(publicId);
       return result.result === 'ok';
     } catch (error) {
-      throw new Error(`Failed to delete file: ${error.message}`);
+      throw error;
     }
   }
 

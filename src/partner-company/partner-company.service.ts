@@ -34,7 +34,7 @@ export class PartnerCompanyService {
       companyAdmin.password = await bcrypt.hash(password, 10)
 
       const avatarUrl = this.configService.get('COMPANY_ADMIN_AVATAR_URL') || ""
-      const avatarPublicId = this.configService.get('COMPANY_ADMIN_AVATAR_URL') || ""
+      const avatarPublicId = this.configService.get('COMPANY_ADMIN_AVATAR_PUBLIC_ID') || ""
 
       const savedAdmin = await this.userRepo.save({
         ...companyAdmin,
@@ -81,7 +81,7 @@ export class PartnerCompanyService {
       if (!partnerToBeUpdated) throw new NotFoundException("Partner company not found");
 
 
-      const adminToBeUpdated = await this.userRepo.findOneBy({ id: updatePartnerCompanyDto.companyAdminId })
+      const adminToBeUpdated = await this.userRepo.findOneBy({ id: partnerToBeUpdated.companyAdminId })
       if (!adminToBeUpdated) throw new NotFoundException("Company admin not found")
 
 
@@ -101,6 +101,10 @@ export class PartnerCompanyService {
       if (!newPublicId && !newUrl) throw new BadRequestException("No adminAvatar publicId/url provided")
 
       if (adminToBeUpdated.avatarPublicId !== newPublicId) {
+        // console.log('fetched avatar publicId ', adminToBeUpdated.avatarPublicId);
+        // console.log('new pub id ', newPublicId);
+
+        // throw new Error("hii")
         const result = await this.cloudinaryService.deleteFile(adminToBeUpdated.avatarPublicId)
         if (!result) throw new BadRequestException("Image deletion failed");
 
@@ -114,7 +118,7 @@ export class PartnerCompanyService {
       partnerToBeUpdated.adminFirstName = updatePartnerCompanyDto.adminFirstName;
       partnerToBeUpdated.adminLastName = updatePartnerCompanyDto.adminLastName;
       partnerToBeUpdated.adminPhoneNumber = updatePartnerCompanyDto.adminPhoneNumber;
-      partnerToBeUpdated.companyAdminId = updatePartnerCompanyDto.companyAdminId;
+      partnerToBeUpdated.companyAdminId = adminToBeUpdated.id;
       partnerToBeUpdated.companyName = updatePartnerCompanyDto.companyName;
       partnerToBeUpdated.companyType = updatePartnerCompanyDto.companyType;
 
@@ -126,28 +130,7 @@ export class PartnerCompanyService {
     }
   }
 
-  // async remove(id: string): Promise<Boolean> {
-  //   try {
-  //     await this.datasource.transaction(async (manager) => {
-  //       const toBeDeleted = await manager.findOne(PartnerCompany, { where: { id } });
-  //       if (!toBeDeleted) throw new NotFoundException('Partner company not found');
 
-  //       await manager.delete(Users, { id: toBeDeleted.companyAdminId });
-  //       await manager.delete(PartnerCompany, { id });
-  //     });
-
-  //     const toBeDeleted = await this.partnerCompanyRepo.findOneBy({id})
-  //     if(!toBeDeleted)  throw new NotFoundException("Partner company not found");
-
-  //     await this.userRepo.delete({id: toBeDeleted.companyAdminId});
-  //     const result = await this.partnerCompanyRepo.delete({ id })
-
-  //     return result.affected !== 0;
-
-  //   } catch (error) {
-  //     throw error
-  //   }
-  // }
 
   async remove(id: string): Promise<boolean> {
     try {
@@ -189,15 +172,6 @@ export class PartnerCompanyService {
   }
 
 
-  // async removeAll(): Promise<Boolean> {
-  //   try {
-  //     const result = await this.partnerCompanyRepo.delete({})
-
-  //     return result.affected !== 0;
-  //   } catch (error) {
-  //     throw error
-  //   }
-  // }
 
   async removeAll(): Promise<boolean> {
     try {
