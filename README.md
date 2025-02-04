@@ -35,6 +35,13 @@ EMAIL_SECURE=<whether to initiate communication with ssl/tls>
 EMAIL_FROM=<Sender email address>
 GMAIL_SERVICE_AUTH_EMAIL=<aunthenticated email address>
 GMAIL_SERVICE_AUTH_APP_PASSWORD=<email app password>
+COMPANY_ADMIN_PASSWORD=<secure admin password>
+COMPANY_ADMIN_NATIONAL_ID=<nationalId of company admin>
+COMPANY_ADMIN_AVATAR_URL=<cloudinary secure url of the profile_photo>
+COMPANY_ADMIN_AVATAR_PUBLIC_ID=<cloudinary publicId of profile_photo>
+CLOUDINARY_CLOUD_NAME=<cloud name>
+CLOUDINARY_API_SECRET=<api secret>
+CLOUDINARY_API_KEY=<api key>
 ```
 
 * Install required dependencies
