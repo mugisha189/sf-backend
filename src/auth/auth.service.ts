@@ -28,14 +28,15 @@ export class AuthService {
 
     async signIn(loginDto: LoginDto): Promise<string> {
         try {
+            // Check if user exists
             const user = await this.usersService.findUserByEmail(loginDto.email)
             const hashedPassword = await bcrypt.hash(loginDto.password, 10)
             const doesPwordsMatch = await bcrypt.compare(loginDto.password, user.password)
 
-            console.log('doesPwordsMatch', doesPwordsMatch);
+            // Check if password is correct
             if (!doesPwordsMatch) throw new NotFoundException('Password not correct');
 
-            // TODO: Send verification code to email
+            // Send otp to the verified email
             await this.emailService.sendOtpToEmail(loginDto.email)
 
 
@@ -50,13 +51,17 @@ export class AuthService {
 
     async register(createUserDto: CreateUserDto, file: Express.Multer.File): Promise<any> {
         try {
+            // Create a new user
             const createdUser = await this.usersService.createUser(createUserDto, file)
+            
+            // Initialize jwt Payload
             const payload = {
                 userId: createdUser.id,
                 email: createdUser.email,
                 role: createdUser.role,
             }
 
+            // Return registered user, and jwtToken
             return {
                 entity: createdUser,
                 token: await this.jwtService.signAsync(payload)
@@ -75,6 +80,7 @@ export class AuthService {
             //Delete the user
             await this.confirmTokenService.deleteToken(user.id)
 
+            // Generate token for reseting the password
             let resetToken = randomBytes(32).toString("hex")
             const tokenHash = await bcrypt.hash(resetToken, 10)
 
@@ -90,7 +96,7 @@ export class AuthService {
     }
     async changePassword(changePasswordDto: ChangePasswordDto): Promise<any> {
         try {
-            // Return updated user
+            // Pass to userService
             return await this.usersService.updatePassword( changePasswordDto)
         } catch (error) {
             throw error

@@ -21,19 +21,21 @@ export class CloudinaryService {
 
   async uploadFile(
     file: Express.Multer.File,
-    folder:string
+    folder: string
   ): Promise<Record<string, string>> {
     return new Promise((resolve, reject) => {
+      // Define publicId
+      const public_id = file.originalname.split('.').slice(0, -1).join('.');
 
-      const public_id= file.originalname.split('.').slice(0, -1).join('.');
+      // Upload file_stream to cloudinary
       const uploadStream = cloudinary.uploader.upload_stream(
-        { 
+        {
           folder,
           public_id,
           unique_filename: false,
           use_filename: true
 
-         },
+        },
         (error, result) => {
           if (error || !result) return reject(error);
           resolve({
@@ -49,13 +51,6 @@ export class CloudinaryService {
     })
   }
 
-  async checkIfImageExists(){
-    try {
-      console.log('try');
-    } catch (error) {
-      console.log('catch');
-    }
-  }
 
   async deleteFile(publicId: string): Promise<boolean> {
     try {
@@ -67,9 +62,10 @@ export class CloudinaryService {
     }
   }
 
-  
-  async getImagesInFolder(): Promise<string[]> {
+
+  async getImagesInFolder(): Promise<Record<string, string[]>> {
     try {
+      // Get cloudinary images info
       const response = await cloudinary.api.resources({
         type: 'upload',
         prefix: "USER_AVATARS", // Fetches all images in the given folder
@@ -77,7 +73,10 @@ export class CloudinaryService {
       });
 
       // Extract URLs of images
-      return response.resources.map((resource:any) => resource.public_id);
+      return {
+        secure_urls: response.resources.map((resource: any) => resource.secure_url),
+        public_ids: response.resources.map((resource: any) => resource.public_id)
+      };
     } catch (error) {
       throw new Error(`Error fetching images from Cloudinary: ${error.message}`);
     }

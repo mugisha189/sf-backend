@@ -8,7 +8,6 @@ import { OtpEntity } from "src/otp/entity/otp.entity";
 import { OTP_CODE_STATUS } from "src/constants/constants";
 import { UsersService } from "src/users/users.service";
 import { Repository } from "typeorm";
-import { BlobOptions } from "buffer";
 import { VerifyOtpDto } from "../otp/dto/verifyOtp.dto";
 
 @Injectable()
@@ -22,11 +21,14 @@ export class EmailService {
     ) { }
     async sendOtpToEmail(email: string):Promise<boolean> {
         try {
+            // Generate numerical code
             const otpCode = randomInt(100000, 999999);
             const expiresAt = new Date(Date.now() + 1 * 60 * 1000); //1 seconds expiry
 
+            // Validate the email address
             if (!this.isValidEmail(email)) throw new UnauthorizedException("Email is not valid")
-            // Delete all OTP passwords of the email
+            
+                // Delete all OTP passwords of the email
             await this.otpRepo.delete({ email })
 
             // Generate new OTP
@@ -46,6 +48,7 @@ export class EmailService {
                 otpCode
             }
 
+
             await this.sendEmail(email, subject, hbsTemplateName, context)
             return true
         } catch (error) {
@@ -63,6 +66,7 @@ export class EmailService {
             // Link to be sent
             const link=  `${clientUrl}/password-reset/?token=${token}?email=${email}`
             
+            // Send the password reset link to email
             const subject = "PASSWORD RESET CONFIRMATION"
             const hbsTemplateName = './confirmation'
             const context = {
@@ -88,6 +92,7 @@ export class EmailService {
             //Check if the email exists
             await this.usersService.findUserByEmail(verifyOtpDto.email)
 
+            // Obtain the otp to be verfied
             const otpRecord = await this.otpRepo.findOne({ where: { email: verifyOtpDto.email, otpCode: verifyOtpDto.otpCode } });
 
             // Check if the code is reused
@@ -120,7 +125,8 @@ export class EmailService {
                 email: user.email,
                 role: user.role
             }
-            // TODO: Generate a JWT and return it
+
+            // Generate the jwtToken
             const token = await this.jwtService.signAsync(payload)
             return {
                 entity: user,
@@ -151,6 +157,7 @@ export class EmailService {
         }
     }
 
+    
     private isValidEmail(email: string): boolean {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);

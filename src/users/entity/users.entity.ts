@@ -44,4 +44,8 @@ export class Users {
 
     @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date
+
+    constructor(newUser: Partial<Users>){
+        Object.assign(this, newUser)
+    }
 }

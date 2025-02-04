@@ -42,8 +42,7 @@ export class AuthController {
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
     async register(@Body() registerDto: CreateUserDto, @UploadedFile() file?: Express.Multer.File) {
-        // console.log('registerdto ', registerDto);
-        // console.log('file ', file);
+        // Check if profilePhoto is uploaded
         if(!file ) throw new NotFoundException("No file uploaded")
         const result = await this.authService.register(registerDto, file)
         return new CustomApiResponse("Registered successfully", result.entity, result.token)

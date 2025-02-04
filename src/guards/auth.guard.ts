@@ -11,11 +11,16 @@ export class AuthGuard implements CanActivate{
         const request = context.switchToHttp().getRequest()
         const token = this.extractTokenFromHeader(request)
 
+        // Check if jwtToken is provided
         if(!token){
             throw new UnauthorizedException("No jwtToken provided")
         }
 
+
+
         try {
+
+            // Obtain the payload from the jwtToken
             const payload = await this.jwtService.verifyAsync(
                 token,
                 {
@@ -23,6 +28,8 @@ export class AuthGuard implements CanActivate{
                 }
             )
 
+
+            // Pass the payload the request as 'user'
             request['user'] = payload
         } catch (error) {
             if(error instanceof UnauthorizedException){

@@ -51,8 +51,6 @@ export class SavingProductController {
   @Roles(UserRole.COMPANY_ADMIN, UserRole.SUPER_ADMIN, UserRole.SUBSCRIBER)
   async findSavingProduct(@Param('id') id: string) {
     const result = await this.savingProductService.findOne(id);
-    console.log("saving product ",  result)
-
     return new CustomApiResponse("Saving product here", result)
   }
 

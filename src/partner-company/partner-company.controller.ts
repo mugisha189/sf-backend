@@ -21,12 +21,13 @@ export class PartnerCompanyController {
     description: "retrieved all successfully"
   })
   @Get('all')
-  // @Roles(UserRole.SUPER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   async getAllImages() {
     const result = await this.partnerCompanyService.getImages();
     return new CustomApiResponse("Fetched all image urls successfully", result)
   }
+  
   @ApiOperation({ summary: "Create a partner company" })
   @ApiResponse({
     status: 201,

@@ -26,31 +26,31 @@ export class UsersService {
   }
 
 
-  async createUser(createUserDto: CreateUserDto, file: Express.Multer.File): Promise<Users> {
+  async createUser(createUserDto: CreateUserDto, userAvatar: Express.Multer.File): Promise<Users> {
     try {
-
-      // console.log('creteUser password ', createUserDto.password );
+      // Check if password and confirmPassword matches
       if (createUserDto.password !== createUserDto.confirmPassword) {
         throw new BadRequestException("Password must match")
       }
 
-      const result = await this.cloudinaryService.uploadFile(file, this.avatarFolderName)
+      // upload userAvatar to cloudinary
+      const result = await this.cloudinaryService.uploadFile(userAvatar, this.avatarFolderName)
       if (!result) throw new BadRequestException("Upload failed");
-      console.log('Upload completed');
 
-      const user = new Users()
+      // Remove file from registering dto
+      const { file, ...dtoWithoutFile } = createUserDto
 
-      user.firstName = createUserDto.firstName;
-      user.lastName = createUserDto.lastName;
-      user.email = createUserDto.email;
-      user.phoneNumber = createUserDto.phoneNumber;
-      user.nationalId = createUserDto.nationalId;
-      user.role = createUserDto.role;
-      user.password = await bcrypt.hash(createUserDto.password, 10);
-      user.avatarUrl = result.imageUrl
-      user.avatarPublicId = result.imagePublicId;
+      // Create new user
+      const user = new Users(
+        {
+          ...dtoWithoutFile,
+          password: await bcrypt.hash(createUserDto.password, 10),
+          avatarUrl: result.imageUrl,
+          avatarPublicId: result.imagePublicId
 
-
+        }
+      )
+      // Return saved user
       return await this.userRepo.save(user)
 
     } catch (error) {
@@ -61,7 +61,7 @@ export class UsersService {
 
   async findUserByEmail(email: string): Promise<Users> {
     try {
-      console.log('email ', email);
+      // Check if user exists by email
       const user = await this.userRepo.findOne({ where: { email } })
       if (!user) throw new NotFoundException(`User not found`);
 
@@ -74,6 +74,7 @@ export class UsersService {
 
   async findUserById(id: string): Promise<Users> {
     try {
+      // Check if user exists by id
       const user = await this.userRepo.findOne({ where: { id } })
       if (!user) throw new NotFoundException(`User not found`);
 
@@ -87,6 +88,7 @@ export class UsersService {
 
   async findAll(): Promise<Users[]> {
     try {
+      // Get all users
       return await this.userRepo.find()
     } catch (error) {
       throw error
@@ -95,19 +97,25 @@ export class UsersService {
 
   async updatePassword(changePasswordDto: ChangePasswordDto): Promise<Users> {
     try {
+      // Check if user exists by email
       const user = await this.userRepo.findOneBy({ email: changePasswordDto.email })
       if (!user) throw new BadRequestException("Invalid link or expired");
 
+      // Check if token associated exists
       const confirmToken = await this.confirmTokenService.findOneByUserId(user.id)
-      if (!confirmToken) throw new BadRequestException("Invalid link or expired");
 
+      // Check if token associated is still valid
+      if (!confirmToken) throw new BadRequestException("Invalid link or expired");
       if (confirmToken.token !== changePasswordDto.token) throw new BadRequestException("Invalid link or expired");
 
+      // Hash new password
       const saltRounds = 10
       const hashedNewPword = await bcrypt.hash(changePasswordDto.newPassword, saltRounds)
 
+      // Update user with new hashed password
       user.password = hashedNewPword
 
+      // Return updated user with new password
       return await this.userRepo.save(user)
 
     } catch (error) {
@@ -118,19 +126,17 @@ export class UsersService {
 
   async updateUser(id: string, updateUserDto: UpdateUserDto, file: Express.Multer.File) {
     try {
-
+      // Check if user exists 
       const user = await this.userRepo.findOne({ where: { id } })
       if (!user) throw new NotFoundException("User not found");
 
-      if (!updateUserDto.email && !updateUserDto.firstName && !updateUserDto.lastName && !updateUserDto.nationalId && !updateUserDto.phoneNumber && !updateUserDto.password) {
-        throw new BadRequestException('Please fill all required fields')
-      }
-
-
+      // Get filename only without extension
       const fileNameOnly = file.originalname.split('.')[0]
 
-      // Check if the same file is uploaded
+      // Check if the different file is uploaded
       if (user.avatarPublicId !== fileNameOnly) {
+
+        // Then delete the old one
         const result = await this.cloudinaryService.deleteFile(user.avatarPublicId)
         if (!result) throw new BadRequestException("Image deletion failed")
       }
@@ -139,17 +145,18 @@ export class UsersService {
       const result = await this.cloudinaryService.uploadFile(file, this.avatarFolderName)
       if (!result) throw new BadRequestException("Image upload failed")
 
-
+      //  Update the user with new hashed password
       const saltRounds = 10
-
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds)
 
+      // Update the user with new information
       Object.assign(user, {
         ...updateUserDto,
         avatarUrl: result.imageUrl,
         avatarPublicId: result.imagePublicId
       })
 
+      // Return the updated user
       return this.userRepo.save(user)
 
     } catch (error) {
@@ -159,34 +166,54 @@ export class UsersService {
 
   async deleteUser(id: string): Promise<Boolean> {
     try {
+      // Check if user exists by id
       const user = await this.userRepo.findOne({ where: { id } })
       if (!user) throw new NotFoundException('User not found')
 
-      const isAvatarDeleted = await this.cloudinaryService.deleteFile(user.avatarPublicId)
-      if(!isAvatarDeleted) throw new BadRequestException("Image deletion failed")
+      // Await for user and image deletion promises
+      const [isAvatarDeleted, isUserDeleted] = await Promise.all([
+        this.cloudinaryService.deleteFile(user.avatarPublicId),
+        this.userRepo.delete({ id })
+      ])
 
+      // Check if avatar is deleted
+      if (isAvatarDeleted) throw new BadRequestException("Image deletion failed")
 
-      const result = await this.userRepo.delete({ id })
+      // If user is deleted
+      if (isUserDeleted.affected === 0) {
+        throw new NotFoundException("User not found");
+      }
 
-      return result.affected !== 0;
-
+      return true
     } catch (error) {
       throw error
     }
   }
 
-  
+
   async deleteAllUser(): Promise<Boolean> {
     try {
-      const users = await this.userRepo.find({select: ['avatarPublicId']})
+      const users = await this.userRepo.find({ select: ['avatarPublicId'] })
+      if (users.length === 0) throw new BadRequestException('No users to delete')
+
+      // Create promises for avatar deletions
       const avatarDeletePromises = users
-      .filter(user => user.avatarPublicId)
-      .map((user) => this.cloudinaryService.deleteFile(user.avatarPublicId))
+        .filter(user => user.avatarPublicId)
+        .map((user) => this.cloudinaryService.deleteFile(user.avatarPublicId))
 
-      await Promise.all(avatarDeletePromises)
-      const result = await this.userRepo.delete({})
+      // Obtain results from promises
+      const [avatarDeleteResults, usersDeleteResult] = await Promise.all([
+        Promise.allSettled(avatarDeletePromises),
+        this.userRepo.delete({})
+      ])
 
-      return result.affected !== 0;
+      // Check if avatars were deleted successfully
+      avatarDeleteResults.forEach((result, index) => {
+        if (result.status === 'rejected') throw new Error(result.reason)
+      })
+
+      // Return whether all users were deleted successfully
+      return usersDeleteResult.affected !== 0;
     } catch (error) {
       throw error
     }

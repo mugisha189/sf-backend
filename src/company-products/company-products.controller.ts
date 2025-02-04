@@ -30,7 +30,7 @@ export class CompanyProductsController {
 
   @ApiOperation({ summary: "Get all company products" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "retrieved all successfully"
   })
   @Get()
@@ -43,7 +43,7 @@ export class CompanyProductsController {
 
   @ApiOperation({ summary: "Get single company product" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "retrieved successfully"
   })
   @Get(':id')
@@ -56,7 +56,7 @@ export class CompanyProductsController {
 
   @ApiOperation({ summary: "Update company product" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "updated successfully"
   })
   @Put(':id')
@@ -69,7 +69,7 @@ export class CompanyProductsController {
 
   @ApiOperation({ summary: "Delete single company product" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "deleted successfully"
   })
   @Delete(':id')
@@ -82,7 +82,7 @@ export class CompanyProductsController {
 
   @ApiOperation({ summary: "Delete all company products" })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: "deleted successfully"
   })
   @Delete()
@@ -93,3 +93,4 @@ export class CompanyProductsController {
     return new CustomApiResponse("Delete all company product successfully", result)
   }
 }
+

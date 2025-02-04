@@ -11,7 +11,7 @@ export class CustomExceptionFilter implements ExceptionFilter{
         const status = exception.getStatus()  
 
 
-        
+        // Catch the clas-validation errors
         if(exception instanceof BadRequestException){
             const responseBody= exception.getResponse()
 
