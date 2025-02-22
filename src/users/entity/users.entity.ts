@@ -1,6 +1,7 @@
 import { IsEnum, IsNotEmpty } from "class-validator";
 import { UserRole } from "src/constants/role.enum";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { PartnerCompany } from "src/partner-company/entities/partner-company.entity";
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UUID } from "typeorm/driver/mongodb/bson.typings";
 
 @Entity()
@@ -24,12 +25,6 @@ export class Users {
     @Column({ type: 'varchar' })
     phoneNumber: string
 
-    @Column({ type: 'varchar' })
-    avatarUrl: string
-
-    @Column({ type: 'varchar' })
-    avatarPublicId: string
-
 
     @Column({ type: 'enum', enum: Object.values(UserRole) })
     @IsEnum(UserRole, { message: 'role must be SUPER_ADMIN, COMPANY_ADMIN, or SUBSCRIBER' })
@@ -39,13 +34,20 @@ export class Users {
     @Column({ type: 'varchar' })
     password: string
 
+
+    @OneToOne(() => PartnerCompany, (company) => company.companyAdmin)
+    partnerCompany: PartnerCompany;
+
+    @Column({ type: 'boolean', default: false })
+    deleted: boolean
+
     @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     updatedAt: Date
 
     @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date
 
-    constructor(newUser: Partial<Users>){
+    constructor(newUser: Partial<Users>) {
         Object.assign(this, newUser)
     }
 }

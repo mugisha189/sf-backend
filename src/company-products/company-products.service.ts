@@ -4,27 +4,61 @@ import { UpdateCompanyProductDto } from './dto/update-company-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompanyProduct } from './entities/company-product.entity';
 import { Repository } from 'typeorm';
+import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
 
 @Injectable()
 export class CompanyProductsService {
 
-  constructor(@InjectRepository(CompanyProduct) private companyProductRepo: Repository<CompanyProduct>) { }
+  constructor(@InjectRepository(CompanyProduct) private companyProductRepo: Repository<CompanyProduct>, @InjectRepository(PartnerCompany) private partnerCompanyRepo: Repository<PartnerCompany>,) { }
 
   async create(createCompanyProductDto: CreateCompanyProductDto): Promise<CompanyProduct> {
     try {
-      // Create company product
-      const companyProduct = new CompanyProduct(createCompanyProductDto)
-      return this.companyProductRepo.save(companyProduct);
+      const company = await this.partnerCompanyRepo.findOneBy({ id: createCompanyProductDto.companyId });
+      if (!company) {
+        throw new NotFoundException("Partner company not found");
+      }
 
+      const companyProduct = new CompanyProduct({
+        ...createCompanyProductDto,
+        company,
+      });
+
+      return await this.companyProductRepo.save(companyProduct);
     } catch (error) {
-      throw error
+      throw error;
     }
   }
+
+  async update(id: string, updateCompanyProductDto: UpdateCompanyProductDto): Promise<CompanyProduct> {
+    try {
+      const existingProduct = await this.companyProductRepo.findOne({
+        where: { id },
+        relations: ["company"],
+      });
+
+      if (!existingProduct) {
+        throw new NotFoundException("Company product not found");
+      }
+
+      if (updateCompanyProductDto.companyId) {
+        const company = await this.partnerCompanyRepo.findOneBy({ id: updateCompanyProductDto.companyId });
+        if (!company) {
+          throw new NotFoundException("Partner company not found");
+        }
+        existingProduct.company = company;
+      }
+      Object.assign(existingProduct, updateCompanyProductDto);
+      return await this.companyProductRepo.save(existingProduct);
+    } catch (error) {
+      throw error;
+    }
+  }
+
 
   async findAll(): Promise<CompanyProduct[]> {
     try {
       // Get all products
-      const products = await this.companyProductRepo.find()
+      const products = await this.companyProductRepo.find({ relations: ['company'], })
       return products
     } catch (error) {
       throw error
@@ -39,21 +73,7 @@ export class CompanyProductsService {
     return product;
   }
 
-  async update(id: string, updateCompanyProductDto: UpdateCompanyProductDto): Promise<CompanyProduct> {
-    try {
-      // Directly update the company product
-      const isUpdated = await this.companyProductRepo.update(id, updateCompanyProductDto)
-      if (isUpdated.affected === 0) throw new NotFoundException("Company product not found")
 
-      // Check if the updated product is there
-      const updated = await this.companyProductRepo.findOneBy({ id })
-      if (!updated) throw new NotFoundException("Company product not found");
-      return updated;
-
-    } catch (error) {
-      throw error
-    }
-  }
 
   async remove(id: string): Promise<Boolean> {
     try {

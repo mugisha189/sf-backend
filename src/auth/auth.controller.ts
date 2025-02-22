@@ -10,6 +10,7 @@ import { VerifyOtpDto } from 'src/otp/dto/verifyOtp.dto';
 import { ForgotPWordDto } from 'src/users/dto/forget-password.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -29,7 +30,7 @@ export class AuthController {
     })
     async login(@Body() loginDto: LoginDto) {
         const result = await this.authService.signIn(loginDto)
-        return new CustomApiResponse(result, null)
+        return new CustomApiResponse("Login Successfully", result)
     }
 
     @ApiOperation({ summary: "User Registration" })
@@ -39,51 +40,59 @@ export class AuthController {
     })
     @HttpCode(HttpStatus.OK)
     @Post('register')
-    @ApiConsumes('multipart/form-data')
-    @UseInterceptors(FileInterceptor('file'))
-    async register(@Body() registerDto: CreateUserDto, @UploadedFile() file?: Express.Multer.File) {
-        // Check if profilePhoto is uploaded
-        if(!file ) throw new NotFoundException("No file uploaded")
-        const result = await this.authService.register(registerDto, file)
+    async register(@Body() registerDto: CreateUserDto) {
+        const result = await this.authService.register(registerDto)
         return new CustomApiResponse("Registered successfully", result.entity, result.token)
     }
 
-
-    @ApiOperation({ summary: "Forgot password" })
+    @ApiOperation({ summary: 'Refresh access token' })
     @ApiResponse({
         status: 200,
-        description: "Password_reset request accepted"
+        description: 'Access token refreshed successfully',
     })
-    @Post('forget-password')
-    async requestPasswordReset(@Body() email: ForgotPWordDto) {
-        const result = await this.authService.requestToResetPassword(email.email)
-        return new CustomApiResponse("Please confirm your request on email", null)
-    }
-
-    @ApiOperation({ summary: "Reset password" })
-    @ApiResponse({
-        status: 201,
-        description: "Password reset successfully"
-    })
-    @Put('reset-password')
-    async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
-        const result = await this.authService.changePassword(changePasswordDto)
-        return new CustomApiResponse("Reset password successfully", result)
+    @HttpCode(HttpStatus.OK)
+    @Post('refresh-token')
+    async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+        const result = await this.authService.refreshToken(refreshTokenDto.refreshToken);
+        return new CustomApiResponse('Token refreshed successfully', result);
     }
 
 
+    // @ApiOperation({ summary: "Forgot password" })
+    // @ApiResponse({
+    //     status: 200,
+    //     description: "Password_reset request accepted"
+    // })
+    // @Post('forget-password')
+    // async requestPasswordReset(@Body() email: ForgotPWordDto) {
+    //     const result = await this.authService.requestToResetPassword(email.email)
+    //     return new CustomApiResponse("Please confirm your request on email", null)
+    // }
 
-    @ApiOperation({ summary: "OTP verification" })
-    @ApiResponse({
-        status: 200,
-        description: "Logged in successfully"
-    })
-    @Post('verify-otp')
-    @HttpCode(HttpStatus.CREATED)
-    async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
-        const result = await this.emailService.verifyOtp(verifyOtpDto)
-        return new CustomApiResponse("Welcome back", result.entity, result.token)
-    }
+    // @ApiOperation({ summary: "Reset password" })
+    // @ApiResponse({
+    //     status: 201,
+    //     description: "Password reset successfully"
+    // })
+    // @Put('reset-password')
+    // async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
+    //     const result = await this.authService.changePassword(changePasswordDto)
+    //     return new CustomApiResponse("Reset password successfully", result)
+    // }
+
+
+
+    // @ApiOperation({ summary: "OTP verification" })
+    // @ApiResponse({
+    //     status: 200,
+    //     description: "Logged in successfully"
+    // })
+    // @Post('verify-otp')
+    // @HttpCode(HttpStatus.CREATED)
+    // async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    //     const result = await this.emailService.verifyOtp(verifyOtpDto)
+    //     return new CustomApiResponse("Welcome back", result.entity, result.token)
+    // }
 
     @ApiBearerAuth('access-token')
     @UseGuards(AuthGuard)

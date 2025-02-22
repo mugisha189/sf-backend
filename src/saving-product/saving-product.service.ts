@@ -1,91 +1,112 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { SavingProduct } from './entities/saving-product.entity';
+import { EntryPoint } from './entities/entry-points.entity';
 import { CreateSavingProductDto } from './dto/create-saving-product.dto';
 import { UpdateSavingProductDto } from './dto/update-saving-product.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { SavingProduct } from './entities/saving-product.entity';
-import { Repository } from 'typeorm';
+import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
+import { CompanyProduct } from 'src/company-products/entities/company-product.entity';
 
 @Injectable()
 export class SavingProductService {
   constructor(
     @InjectRepository(SavingProduct) private savingProductRepo: Repository<SavingProduct>,
+    @InjectRepository(EntryPoint) private entryPointRepo: Repository<EntryPoint>,
+    @InjectRepository(PartnerCompany) private partnerCompanyRepo: Repository<PartnerCompany>,
+    @InjectRepository(CompanyProduct) private companyProductRepo: Repository<CompanyProduct>,
   ) { }
-  async create(createSavingProductDto: CreateSavingProductDto): Promise<SavingProduct> {
+
+  async create(createSavingProductDto: CreateSavingProductDto, productLogo: Express.Multer.File): Promise<SavingProduct> {
     try {
-      // Create saving product
-      const savingProduct = new SavingProduct(createSavingProductDto)
-      return await this.savingProductRepo.save(savingProduct)
+      const { companyId, entryPoints, ...savingProductData } = createSavingProductDto;
 
+      const company = await this.partnerCompanyRepo.findOne({ where: { id: companyId } });
+      if (!company) throw new NotFoundException('Company not found');
+
+      const savingProduct = this.savingProductRepo.create({
+        ...savingProductData,
+        company,
+      });
+
+      const savedProduct = await this.savingProductRepo.save(savingProduct);
+
+      const entryPointEntities = await Promise.all(
+        entryPoints.map(async (entryPoint) => {
+          const product = await this.companyProductRepo.findOne({ where: { id: entryPoint.productId } });
+          if (!product) throw new NotFoundException(`Company Product not found for ID: ${entryPoint.productId}`);
+
+          return this.entryPointRepo.create({ ...entryPoint, product, savingProduct: savedProduct });
+        })
+      );
+
+      await this.entryPointRepo.save(entryPointEntities);
+
+      return savedProduct;
     } catch (error) {
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
-
   }
 
   async findAll(): Promise<SavingProduct[]> {
-    try {
-      // Get all saving products
-      const savingProducts = await this.savingProductRepo.find()
-      return savingProducts;
-    } catch (error) {
-      throw error
-    }
+    return this.savingProductRepo.find({ where: { deleted: false }, relations: ['entryPoints', 'company'] });
   }
 
   async findOne(id: string): Promise<SavingProduct> {
-    try {
-      // Check if savingProduct exists
-      const savingProduct = await this.savingProductRepo.findOneBy({ id })
-      if (!savingProduct) throw new NotFoundException("Saving product not found")
-      return savingProduct;
-
-    } catch (error) {
-      throw error
-    }
+    const savingProduct = await this.savingProductRepo.findOne({
+      where: { id, deleted: false },
+      relations: ['entryPoints', 'company'],
+    });
+    if (!savingProduct) throw new NotFoundException('Saving product not found');
+    return savingProduct;
   }
 
-  async update(id: string, updateSavingProductDto: UpdateSavingProductDto): Promise<SavingProduct> {
-    try {
-      // Directly update the savingProduct
-      const toBeUpdated = await this.savingProductRepo.update(id, updateSavingProductDto)
+  async update(id: string, updateSavingProductDto: UpdateSavingProductDto, productLogo: Express.Multer.File): Promise<SavingProduct> {
+    const existingProduct = await this.savingProductRepo.findOne({ where: { id, deleted: false } });
+    if (!existingProduct) throw new NotFoundException('Saving product not found');
 
-      // Check if saving Product was updated 
-      if (toBeUpdated.affected === 0) {
-        throw new NotFoundException("Saving product not found")
-      }
+    if (updateSavingProductDto.entryPoints) {
+      const { entryPoints } = updateSavingProductDto;
+      const existingEntryPoints = existingProduct.entryPoints;
 
-      // Return the updated savingProduct
-      const updated = await this.savingProductRepo.findOneBy({ id });
-      if (!updated) throw new NotFoundException("Saving product not found");
+      const entryPointEntities = await Promise.all(
+        entryPoints.map(async (entryPoint) => {
+          const product = await this.companyProductRepo.findOne({ where: { id: entryPoint.productId } });
+          if (!product) throw new NotFoundException(`Company Product not found for ID: ${entryPoint.productId}`);
 
-      return updated;
-    } catch (error) {
-      throw error
+          const existingEntryPoint = existingEntryPoints.find((ep) => ep.id === entryPoint.id);
+          if (existingEntryPoint) {
+            Object.assign(existingEntryPoint, entryPoint);
+            return this.entryPointRepo.save(existingEntryPoint);
+          }
+
+          return this.entryPointRepo.create({ ...entryPoint, product, savingProduct: existingProduct });
+        })
+      );
+
+      await this.entryPointRepo.save(entryPointEntities);
     }
+
+    await this.savingProductRepo.update(id, updateSavingProductDto);
+
+    return this.findOne(id);
   }
 
-  async remove(id: string): Promise<Boolean> {
-    try {
-      // Check if the savingProduct exists
-      const product = await this.savingProductRepo.findOneBy({ id })
-      if (!product) throw new NotFoundException("Saving product not found")
+  async delete(id: string): Promise<boolean> {
+    const product = await this.savingProductRepo.findOne({ where: { id, deleted: false } });
+    if (!product) throw new NotFoundException('Saving product not found');
 
-      // Delete the product
-      const result = await this.savingProductRepo.delete({ id })
-      return result.affected !== 0;
+    await this.savingProductRepo.update(id, { deleted: true });
 
-    } catch (error) {
-      throw error
-    }
+    return true;
   }
 
-  async removeAll(): Promise<Boolean> {
-    try {
-      // Deleted all saving products
-      const result = await this.savingProductRepo.delete({})
-      return result.affected !== 0;
-    } catch (error) {
-      throw error
-    }
+  async deleteEntryPoint(id: string): Promise<boolean> {
+    const entryPoint = await this.entryPointRepo.findOne({ where: { id, deleted: false } });
+    if (!entryPoint) throw new NotFoundException('EntryPoint not found');
+
+    await this.entryPointRepo.update(id, { deleted: true });
+
+    return true;
   }
 }

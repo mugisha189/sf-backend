@@ -1,19 +1,17 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
-import { JwtService } from "@nestjs/jwt"
+import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from 'src/users/dto/login.dto';
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UUID } from 'typeorm/driver/mongodb/bson.typings';
 import { OtpEntity } from '../otp/entity/otp.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EmailService } from 'src/email/email.service';
 import { ConfirmationTokenService } from 'src/confirmationToken/confirmToken.service';
 import { randomBytes } from 'crypto';
-import { ConfigService } from '@nestjs/config';
 import { ChangePasswordDto } from 'src/users/dto/change-password.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -22,84 +20,109 @@ export class AuthService {
         private jwtService: JwtService,
         private emailService: EmailService,
         private confirmTokenService: ConfirmationTokenService,
-        @InjectRepository(OtpEntity) private otpRepo: Repository<OtpEntity>
-    ) {
-     }
+        @InjectRepository(OtpEntity) private otpRepo: Repository<OtpEntity>,
+        private configService: ConfigService
+    ) { }
 
-    async signIn(loginDto: LoginDto): Promise<string> {
+    private async generateTokens(userId: string, email: string, role: string): Promise<any> {
         try {
-            // Check if user exists
-            const user = await this.usersService.findUserByEmail(loginDto.email)
-            const hashedPassword = await bcrypt.hash(loginDto.password, 10)
-            const doesPwordsMatch = await bcrypt.compare(loginDto.password, user.password)
+            const payload = { userId, email, role };
 
-            // Check if password is correct
-            if (!doesPwordsMatch) throw new NotFoundException('Password not correct');
+            const accessToken = await this.jwtService.signAsync(payload, {
+                secret: this.configService.get<string>('JWT_SECRET'),
+                expiresIn: '1h',
+            });
 
-            // Send otp to the verified email
-            await this.emailService.sendOtpToEmail(loginDto.email)
+            const refreshToken = await this.jwtService.signAsync(payload, {
+                secret: this.configService.get<string>('JWT_SECRET'),
+                expiresIn: '7d',
+            });
 
-
-            return "Please check your email for OTP"
-
+            return { accessToken, refreshToken };
         } catch (error) {
-            throw error
+            throw new InternalServerErrorException('Error generating tokens');
         }
     }
 
-
-
-    async register(createUserDto: CreateUserDto, file: Express.Multer.File): Promise<any> {
+    async signIn(loginDto: LoginDto): Promise<any> {
         try {
-            // Create a new user
-            const createdUser = await this.usersService.createUser(createUserDto, file)
-            
-            // Initialize jwt Payload
-            const payload = {
-                userId: createdUser.id,
-                email: createdUser.email,
-                role: createdUser.role,
+            const user = await this.usersService.findUserByEmail(loginDto.email);
+
+            if (!user) {
+                throw new NotFoundException('User not found');
             }
 
-            // Return registered user, and jwtToken
+            const doesPwordsMatch = await bcrypt.compare(loginDto.password, user.password);
+
+            if (!doesPwordsMatch) {
+                throw new UnauthorizedException('Password is incorrect');
+            }
+
+            const { accessToken, refreshToken } = await this.generateTokens(user.id, user.email, user.role);
+
+            return {
+                entity: user,
+                accessToken,
+                refreshToken,
+            };
+        } catch (error) {
+            if (error instanceof UnauthorizedException) {
+                throw error;
+            }
+            console.log(error);
+            throw new InternalServerErrorException('An error occurred during sign-in');
+        }
+    }
+
+    async register(createUserDto: CreateUserDto): Promise<any> {
+        try {
+            const createdUser = await this.usersService.createUser(createUserDto);
+
+            if (!createdUser) {
+                throw new InternalServerErrorException('User registration failed');
+            }
+
+            const { accessToken, refreshToken } = await this.generateTokens(createdUser.id, createdUser.email, createdUser.role);
+
             return {
                 entity: createdUser,
-                token: await this.jwtService.signAsync(payload)
-            }
+                accessToken,
+                refreshToken,
+            };
         } catch (error) {
-            throw new BadRequestException(error.message)
+            throw new InternalServerErrorException('An error occurred during registration');
         }
     }
 
+    // async requestToResetPassword(email: string): Promise<boolean> {
+    //     const user = await this.usersService.findUserByEmail(email);
+    //     await this.confirmTokenService.deleteToken(user.id);
+    //     let resetToken = randomBytes(32).toString("hex");
+    //     const tokenHash = await bcrypt.hash(resetToken, 10);
+    //     await this.confirmTokenService.createConfirmToken({ token: tokenHash, userId: user.id });
+    //     return this.emailService.sendUserConfirmation(email, tokenHash);
+    // }
 
-    async requestToResetPassword(email: string):Promise<Boolean>{
+    // async changePassword(changePasswordDto: ChangePasswordDto): Promise<any> {
+    //     return await this.usersService.updatePassword(changePasswordDto);
+    // }
+
+    async refreshToken(refreshToken: string): Promise<any> {
         try {
-            // Check if user exists
-            const user = await this.usersService.findUserByEmail(email)
+            const decoded = await this.jwtService.verifyAsync(refreshToken, {
+                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+            });
 
-            //Delete the user
-            await this.confirmTokenService.deleteToken(user.id)
+            const payload = { userId: decoded.userId, email: decoded.email, role: decoded.role };
 
-            // Generate token for reseting the password
-            let resetToken = randomBytes(32).toString("hex")
-            const tokenHash = await bcrypt.hash(resetToken, 10)
+            const newAccessToken = await this.jwtService.signAsync(payload, {
+                secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+                expiresIn: '1h',
+            });
 
-            // Create new confirmation token
-            const token = await this.confirmTokenService.createConfirmToken({token: tokenHash, userId: user.id})
-
-            // Send password reset link to user
-            return this.emailService.sendUserConfirmation(email, token.token)
-
+            return { accessToken: newAccessToken };
         } catch (error) {
-            throw error
-        }
-    }
-    async changePassword(changePasswordDto: ChangePasswordDto): Promise<any> {
-        try {
-            // Pass to userService
-            return await this.usersService.updatePassword( changePasswordDto)
-        } catch (error) {
-            throw error
+            throw new UnauthorizedException('Invalid or expired refresh token');
         }
     }
 }

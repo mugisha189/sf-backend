@@ -3,30 +3,31 @@ import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { COMPANY_TYPE } from "src/constants/constants";
 
 export class CreateCompanyProductDto {
-    
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    companyName: string
-
-    @ApiProperty()
-    @IsEnum(COMPANY_TYPE, { message: 'Company type must be either TELECOM,PETROL_STATIONS or SUPER_MARKET' })
-    @IsNotEmpty()
-    companyType: COMPANY_TYPE
 
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    packageName: string
+    companyId: string
+
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    name: string
 
     @ApiProperty()
     @IsNumber()
     @IsNotEmpty()
-    packageMaximumAmount: number
+    maximumAmount: number
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    minimumAmount: number
 
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    packageDescription: string
+    description: string
 
 }

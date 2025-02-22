@@ -15,9 +15,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 @UseGuards(AuthGuard, RolesGuard)
 @ApiBearerAuth('access-token')
 export class UsersController {
-    constructor(private userService: UsersService){}
+    constructor(private userService: UsersService) { }
 
-    @ApiOperation({summary: "Fetch user by userId"})
+    @ApiOperation({ summary: "Fetch user by userId" })
     @ApiResponse({
         status: 200,
         description: "Retrieved successfully"
@@ -25,12 +25,12 @@ export class UsersController {
     @Get(':id')
     @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
-    async getUserById(@Param('id') id: string){
+    async getUserById(@Param('id') id: string) {
         const result = await this.userService.findUserById(id)
         return new CustomApiResponse("Retrived successfully", result)
     }
 
-    @ApiOperation({summary: "Fetch all users"})
+    @ApiOperation({ summary: "Fetch all users" })
     @ApiResponse({
         status: 200,
         description: "Retrieved successfully"
@@ -39,13 +39,13 @@ export class UsersController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @Roles(UserRole.SUPER_ADMIN, UserRole.SUBSCRIBER)
-    async getAllUsers(){
+    async getAllUsers() {
         const result = await this.userService.findAll()
         return new CustomApiResponse("Retrived all successfully", result)
 
     }
 
-    @ApiOperation({summary: "Update user"})
+    @ApiOperation({ summary: "Update user" })
     @ApiResponse({
         status: 200,
         description: "Updated successfully"
@@ -55,13 +55,13 @@ export class UsersController {
     @HttpCode(HttpStatus.OK)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
-    async updateUser(@Param('id') id: string,@Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File ){
-        const result = await this.userService.updateUser(id,updateUserDto, file)
+    async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File) {
+        const result = await this.userService.updateUser(id, updateUserDto, file)
         return new CustomApiResponse("Updated user successfully", result)
 
     }
 
-    @ApiOperation({summary: "Delete user by userId"})
+    @ApiOperation({ summary: "Delete user by userId" })
     @ApiResponse({
         status: 200,
         description: "Deleted successfully"
@@ -70,24 +70,10 @@ export class UsersController {
     @Delete(':id')
     @Roles(UserRole.SUPER_ADMIN)
     @HttpCode(HttpStatus.OK)
-    async deleteUser(@Param('id') id: string){
+    async deleteUser(@Param('id') id: string) {
         const result = await this.userService.deleteUser(id)
         return new CustomApiResponse("Deleted successfully", result)
 
     }
 
-    @ApiOperation({summary: "Delete all users"})
-    @ApiResponse({
-        status: 200,
-        description: "Deleted all successfully"
-    })
-    // @UseGuards(AuthGuard)
-    @Delete()
-    @Roles(UserRole.SUPER_ADMIN, UserRole.SUBSCRIBER)
-    @HttpCode(HttpStatus.OK)
-    async deleteAllUser(){
-        const result = await this.userService.deleteAllUser()
-        return new CustomApiResponse("Deleted all successfully", result)
-
-    }
 }

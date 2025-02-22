@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsEnum, isEnum, IsNotEmpty, IsString } from "class-validator"
-import { COMPANY_TYPE } from "src/constants/constants"
+import { COMPANY_TYPE, PARTNERSHIP_TYPE } from "src/constants/constants"
 
 export class CreatePartnerCompanyDto {
     @ApiProperty()
@@ -10,8 +10,13 @@ export class CreatePartnerCompanyDto {
 
     @ApiProperty()
     @IsEnum(COMPANY_TYPE, { message: 'Company type must be either TELECOM,PETROL_STATIONS or SUPER_MARKET' })
-    @IsNotEmpty() 
+    @IsNotEmpty()
     companyType: COMPANY_TYPE
+
+    @ApiProperty()
+    @IsEnum(PARTNERSHIP_TYPE)
+    @IsNotEmpty()
+    partnershipType: PARTNERSHIP_TYPE
 
     @ApiProperty()
     @IsString()
@@ -20,17 +25,22 @@ export class CreatePartnerCompanyDto {
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty() 
+    @IsNotEmpty()
     adminLastName: string
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty() 
+    @IsNotEmpty()
     adminPhoneNumber: string
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty() 
+    @IsNotEmpty()
     adminEmail: string
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    adminNationalId: string
 
 }

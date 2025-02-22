@@ -3,7 +3,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
-import {  jwtConstants } from '../constants/constants';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OtpEntity } from '../otp/entity/otp.entity';
 import { EmailModule } from 'src/email/email.module';
@@ -17,15 +16,14 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
     UsersModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
-      signOptions: {expiresIn: '6000s'}
-    }), 
+      signOptions: { expiresIn: '6000s' }
+    }),
 
     TypeOrmModule.forFeature([OtpEntity]),
     EmailModule,
     ConfirmationTokenModule,
-    
-    
+
+
   ]
 })
-export class AuthModule {}
+export class AuthModule { }

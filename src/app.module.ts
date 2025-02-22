@@ -9,6 +9,10 @@ import { PartnerCompanyModule } from './partner-company/partner-company.module';
 import { CompanyProductsModule } from './company-products/company-products.module';
 import { ProductPurchasesModule } from './product-purchases/product-purchases.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { SeedsService } from './seeds/seeds.service';
+import { SeedsModule } from './seeds/seeds.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Users } from './users/entity/users.entity';
 
 @Module({
   imports: [
@@ -22,9 +26,18 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     EmailModule,
     SavingProductModule,
     PartnerCompanyModule,
+    SeedsModule,
     CompanyProductsModule,
-    ProductPurchasesModule,
+    // ProductPurchasesModule,
     CloudinaryModule,
+    TypeOrmModule.forFeature([Users]),
   ],
+  providers: [SeedsService]
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private readonly seedsService: SeedsService) { }
+
+  async onModuleInit() {
+    await this.seedsService.createSuperAdmin();
+  }
+}

@@ -24,37 +24,37 @@ export class ProductPurchasesService {
     }
   }
 
-  async findAll(req: any): Promise<ProductPurchase[]> {
-    try {
-      let purchases: ProductPurchase[] = []
+  // async findAll(req: any): Promise<ProductPurchase[]> {
+  //   try {
+  //     let purchases: ProductPurchase[] = []
 
-      // Company admin can only see purchase related to his company only
-      if (req.user.role === UserRole.COMPANY_ADMIN) {
+  //     // Company admin can only see purchase related to his company only
+  //     if (req.user.role === UserRole.COMPANY_ADMIN) {
 
-        console.log('the request ', req.user.email);
-        const partnerCompany = await this.partnerCompanyRepo.findOne({ where: { adminEmail: req.user.email } })
-        if (!partnerCompany) throw new BadRequestException("The admin not found")
-        console.log('partner company ', partnerCompany);
-        purchases = await this.productPurchaseRepo.find({
-          where: {
-            companyName: partnerCompany.companyName,
-            companyType: partnerCompany.companyType
-          }
-        })
+  //       console.log('the request ', req.user.email);
+  //       const partnerCompany = await this.partnerCompanyRepo.findOne({ where: {  adminEmail: req.user.email } })
+  //       if (!partnerCompany) throw new BadRequestException("The admin not found")
+  //       console.log('partner company ', partnerCompany);
+  //       purchases = await this.productPurchaseRepo.find({
+  //         where: {
+  //           companyName: partnerCompany.companyName,
+  //           companyType: partnerCompany.companyType
+  //         }
+  //       })
 
-      }
+  //     }
 
-      // Super admin can see all purchases
-      if (req.user.role === UserRole.SUPER_ADMIN) {
-        purchases = await this.productPurchaseRepo.find()
-      }
+  //     // Super admin can see all purchases
+  //     if (req.user.role === UserRole.SUPER_ADMIN) {
+  //       purchases = await this.productPurchaseRepo.find()
+  //     }
 
-      return purchases
+  //     return purchases
 
-    } catch (error) {
-      throw error
-    }
-  }
+  //   } catch (error) {
+  //     throw error
+  //   }
+  // }
 
   async findOne(id: string, req: any): Promise<ProductPurchase> {
     try {

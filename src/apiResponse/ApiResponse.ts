@@ -1,11 +1,11 @@
-export class CustomApiResponse<T=any>{
+export class CustomApiResponse<T = any> {
     message: string;
-    entity: T;
-    token?:string;
+    payload: T;
+    token?: string;
 
-    constructor(message:string, entity:T, token?: string){
+    constructor(message: string, payload: T, token?: string) {
         this.message = message;
-        this.entity = entity;
+        this.payload = payload;
         this.token = token;
     }
 }

@@ -1,53 +1,52 @@
 import { IsEnum } from "class-validator";
-import { CHARGE_TYPE, COMPANY_TYPE } from "src/constants/constants";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { CHARGE_TYPE } from "src/constants/constants";
+import { PartnerCompany } from "src/partner-company/entities/partner-company.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { EntryPoint } from "./entry-points.entity";
 
 @Entity()
 export class SavingProduct {
     @PrimaryGeneratedColumn('uuid')
-    id?: string
+    id?: string;
 
-    @Column({type: "varchar"})
-    savingProductName: string
+    @Column({ type: "varchar" })
+    savingProductName: string;
 
-    @Column({type: "varchar"})
-    companyName: string
+    @ManyToOne(() => PartnerCompany, { nullable: false, onDelete: 'CASCADE' })
+    company: PartnerCompany;
 
-    @Column({type: "enum", enum: Object.values(COMPANY_TYPE)})
-    @IsEnum(COMPANY_TYPE, { message: 'Company type must be either TELECOM,PETROL_STATIONS or SUPER_MARKET' })
-    companyType: COMPANY_TYPE
+    @Column({ type: "varchar" })
+    productDescription: string;
 
-    @Column({type: "varchar"})
-    productDescription: string
+    @Column({ type: "varchar" })
+    productLogo: string;
 
-    @Column({type: 'enum', enum: Object.values(CHARGE_TYPE)})
+    @Column({ type: 'enum', enum: CHARGE_TYPE })
     @IsEnum(CHARGE_TYPE, { message: 'Charge type must be either PERCENTAGE or FIXED' })
-    cashBackChargeType:  CHARGE_TYPE
+    cashBackChargeType: CHARGE_TYPE;
 
-    @Column({type: "int"})
-    cashBackChargeValue: number
+    @Column({ type: "int" })
+    cashBackChargeValue: number;
 
-    @Column({type: "int"})
-    cashBackMinimumCash: number
+    @Column({ type: "int" })
+    cashBackMinimumCash: number;
 
-    @Column({type: "int"})
-    cashBackMaximumCash: number
+    @Column({ type: "int" })
+    cashBackMaximumCash: number;
 
-    @Column({type: "varchar"})
-    entryPointName: string
+    @OneToMany(() => EntryPoint, (entryPoint) => entryPoint.product)
+    entryPoints: EntryPoint[];
 
-    @Column({type: 'enum', enum: Object.values(CHARGE_TYPE)})
-    @IsEnum(CHARGE_TYPE, { message: 'Charge type must be either PERCENTAGE or FIXED' })
-    entryPointChargeType:  CHARGE_TYPE
+    @Column({ type: 'boolean', default: false })
+    deleted: boolean;
 
-    @Column({type: "int"})
-    entryPointChargeValue: number
+    @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    updatedAt: Date;
 
-    @CreateDateColumn({type: "timestamptz"})
-    createdAt: Date
+    @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    createdAt: Date;
 
-
-    constructor(partial: Partial<SavingProduct>){
-        Object.assign(this, partial)
+    constructor(partial: Partial<SavingProduct>) {
+        Object.assign(this, partial);
     }
 }

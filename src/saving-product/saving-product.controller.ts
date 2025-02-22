@@ -1,13 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Put, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { SavingProductService } from './saving-product.service';
 import { CreateSavingProductDto } from './dto/create-saving-product.dto';
 import { UpdateSavingProductDto } from './dto/update-saving-product.dto';
 import { CustomApiResponse } from 'src/apiResponse/ApiResponse';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from 'src/constants/role.enum';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('saving-product')
 @UseGuards(AuthGuard, RolesGuard)
@@ -22,9 +23,11 @@ export class SavingProductController {
   })
   @Roles(UserRole.SUPER_ADMIN)
   @Post()
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('productLogo'))
   @HttpCode(HttpStatus.CREATED)
-  async createSavingProduct(@Body() createSavingProductDto: CreateSavingProductDto) {
-    const result = await this.savingProductService.create(createSavingProductDto)
+  async createSavingProduct(@Body() createSavingProductDto: CreateSavingProductDto, @UploadedFile() productLogo: Express.Multer.File) {
+    const result = await this.savingProductService.create(createSavingProductDto, productLogo)
     return new CustomApiResponse("Registered Saving Product successfully", result)
   }
 
@@ -61,9 +64,11 @@ export class SavingProductController {
   })
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @Roles( UserRole.SUPER_ADMIN)
-  async updateSavingProduct(@Param('id') id: string, @Body() updateSavingProductDto: UpdateSavingProductDto) {
-    const result = await this.savingProductService.update(id, updateSavingProductDto);
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('productLogo'))
+  async updateSavingProduct(@Param('id') id: string, @Body() updateSavingProductDto: UpdateSavingProductDto, @UploadedFile() productLogo: Express.Multer.File) {
+    const result = await this.savingProductService.update(id, updateSavingProductDto, productLogo);
     return new CustomApiResponse("Updated saving product successfully", result)
   }
 
@@ -76,21 +81,8 @@ export class SavingProductController {
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.SUPER_ADMIN)
   async removeSavingProduct(@Param('id') id: string) {
-    const isDeleted = await this.savingProductService.remove(id);
+    const isDeleted = await this.savingProductService.delete(id);
     return new CustomApiResponse("Deleted saving product successfully", { isDeleted })
   }
 
-  @ApiOperation({ summary: "Delete saving products" })
-  @ApiResponse({
-    status: 200,
-    description: "deleted successfully"
-  })
-  @Delete()
-  @HttpCode(HttpStatus.OK)
-  @Roles(UserRole.SUPER_ADMIN)
-  async removeAllSavingProducts() {
-    const areDeleted = await this.savingProductService.removeAll();
-    return new CustomApiResponse("Deleted saving products successfully", { areDeleted })
-
-  }
 }

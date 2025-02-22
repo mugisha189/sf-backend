@@ -35,11 +35,11 @@ export class ProductPurchasesController {
     status: 200,
     description: "retrieved successfully"
   })
-  @Roles( UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
-  async findAll(@Req() req: any) {
-    const result = await this.productPurchasesService.findAll(req);
-    return new CustomApiResponse("Retrieved all purchases", result)
-  }
+  // @Roles( UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
+  // async findAll(@Req() req: any) {
+  //   const result = await this.productPurchasesService.findAll(req);
+  //   return new CustomApiResponse("Retrieved all purchases", result)
+  // }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
