@@ -11,6 +11,7 @@ import { ForgotPWordDto } from 'src/users/dto/forget-password.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { SetPasswordDto } from './dto/set-password.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -43,6 +44,15 @@ export class AuthController {
     async register(@Body() registerDto: CreateUserDto) {
         const result = await this.authService.register(registerDto)
         return new CustomApiResponse("Registered successfully", result.entity, result.token)
+    }
+
+
+    @ApiOperation({ summary: "Set Password" })
+    @HttpCode(HttpStatus.OK)
+    @Post('set-password')
+    async setPassword(@Body() setPasswordDto: SetPasswordDto) {
+        await this.authService.setPassword(setPasswordDto)
+        return new CustomApiResponse("Password set successfully", null)
     }
 
     @ApiOperation({ summary: 'Refresh access token' })

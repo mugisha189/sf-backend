@@ -5,17 +5,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CompanyProduct } from './entities/company-product.entity';
 import { Repository } from 'typeorm';
 import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
+import { Users } from 'src/users/entity/users.entity';
 
 @Injectable()
 export class CompanyProductsService {
 
   constructor(@InjectRepository(CompanyProduct) private companyProductRepo: Repository<CompanyProduct>, @InjectRepository(PartnerCompany) private partnerCompanyRepo: Repository<PartnerCompany>,) { }
 
-  async create(createCompanyProductDto: CreateCompanyProductDto): Promise<CompanyProduct> {
+  async create(createCompanyProductDto: CreateCompanyProductDto, user: any): Promise<CompanyProduct> {
     try {
-      const company = await this.partnerCompanyRepo.findOneBy({ id: createCompanyProductDto.companyId });
+      let company = await this.partnerCompanyRepo.findOne({
+        where: { companyAdmin: { id: user.userId } },
+      });
+
       if (!company) {
-        throw new NotFoundException("Partner company not found");
+        company = await this.partnerCompanyRepo.findOneBy({ id: createCompanyProductDto.companyId });
+        if (!company) {
+          throw new NotFoundException("Partner company not found");
+        }
       }
 
       const companyProduct = new CompanyProduct({
@@ -28,6 +35,9 @@ export class CompanyProductsService {
       throw error;
     }
   }
+
+
+
 
   async update(id: string, updateCompanyProductDto: UpdateCompanyProductDto): Promise<CompanyProduct> {
     try {
@@ -57,17 +67,39 @@ export class CompanyProductsService {
 
   async findAll(): Promise<CompanyProduct[]> {
     try {
-      // Get all products
-      const products = await this.companyProductRepo.find({ relations: ['company'], })
+      // Get all products where deleted is false
+      const products = await this.companyProductRepo.find({
+        where: { deleted: false },
+        relations: ['company'],
+      })
       return products
     } catch (error) {
       throw error
     }
   }
 
+  async findMine(user: any): Promise<CompanyProduct[]> {
+    try {
+      const partnerCompany = await this.partnerCompanyRepo.findOne({
+        where: { companyAdmin: { id: user.userId } },
+      });
+
+      if (!partnerCompany) {
+        return [];
+      }
+
+      return await this.companyProductRepo.find({
+        where: { company: { id: partnerCompany.id }, deleted: false },
+        relations: ["company"],
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findOne(id: string): Promise<CompanyProduct> {
-    // Check if the product exists
-    const product = await this.companyProductRepo.findOneBy({ id })
+    // Check if the product exists and is not deleted
+    const product = await this.companyProductRepo.findOne({ where: { id, deleted: false } })
     if (!product) throw new NotFoundException("Company product not found");
 
     return product;
@@ -77,15 +109,10 @@ export class CompanyProductsService {
 
   async remove(id: string): Promise<Boolean> {
     try {
-      // Check if user exists
-      const user = await this.companyProductRepo.findOneBy({ id })
-      if (!user) throw new NotFoundException("Company product not found")
-
-      // Delete the product
-      const isDeleted = await this.companyProductRepo.delete({ id })
-      // Check true or false for deletion
-
-      return isDeleted.affected !== 0
+      const product = await this.companyProductRepo.findOneBy({ id })
+      if (!product) throw new NotFoundException("Company product not found")
+      await this.companyProductRepo.update({ id }, { deleted: true })
+      return true
     } catch (error) {
       throw error
     }

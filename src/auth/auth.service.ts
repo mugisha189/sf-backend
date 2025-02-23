@@ -8,10 +8,11 @@ import { OtpEntity } from '../otp/entity/otp.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EmailService } from 'src/email/email.service';
-import { ConfirmationTokenService } from 'src/confirmationToken/confirmToken.service';
+import { TokenService } from 'src/token/token.service';
 import { randomBytes } from 'crypto';
 import { ChangePasswordDto } from 'src/users/dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
+import { SetPasswordDto } from './dto/set-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,7 @@ export class AuthService {
         private usersService: UsersService,
         private jwtService: JwtService,
         private emailService: EmailService,
-        private confirmTokenService: ConfirmationTokenService,
+        private tokenService: TokenService,
         @InjectRepository(OtpEntity) private otpRepo: Repository<OtpEntity>,
         private configService: ConfigService
     ) { }
@@ -94,35 +95,30 @@ export class AuthService {
         }
     }
 
-    // async requestToResetPassword(email: string): Promise<boolean> {
-    //     const user = await this.usersService.findUserByEmail(email);
-    //     await this.confirmTokenService.deleteToken(user.id);
-    //     let resetToken = randomBytes(32).toString("hex");
-    //     const tokenHash = await bcrypt.hash(resetToken, 10);
-    //     await this.confirmTokenService.createConfirmToken({ token: tokenHash, userId: user.id });
-    //     return this.emailService.sendUserConfirmation(email, tokenHash);
-    // }
+    async setPassword(data: SetPasswordDto): Promise<boolean> {
+        try {
+            const { token, password: newPassword } = data;
+            await this.usersService.updatePassword({ token, newPassword });
 
-    // async changePassword(changePasswordDto: ChangePasswordDto): Promise<any> {
-    //     return await this.usersService.updatePassword(changePasswordDto);
-    // }
+            return true;
+        } catch (error) {
+            throw new InternalServerErrorException('Error setting new password');
+        }
+    }
+
 
     async refreshToken(refreshToken: string): Promise<any> {
-        try {
-            const decoded = await this.jwtService.verifyAsync(refreshToken, {
-                secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-            });
+        const decoded = await this.jwtService.verifyAsync(refreshToken, {
+            secret: this.configService.get<string>('JWT_SECRET'),
+        });
 
-            const payload = { userId: decoded.userId, email: decoded.email, role: decoded.role };
+        const payload = { userId: decoded.userId, email: decoded.email, role: decoded.role };
 
-            const newAccessToken = await this.jwtService.signAsync(payload, {
-                secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-                expiresIn: '1h',
-            });
+        const newAccessToken = await this.jwtService.signAsync(payload, {
+            secret: this.configService.get<string>('JWT_SECRET'),
+            expiresIn: '1h',
+        });
 
-            return { accessToken: newAccessToken };
-        } catch (error) {
-            throw new UnauthorizedException('Invalid or expired refresh token');
-        }
+        return { accessToken: newAccessToken };
     }
 }

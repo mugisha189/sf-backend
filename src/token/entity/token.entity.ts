@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 
 
 @Entity()
 @Index(['createdAt'], {expireAfterSeconds: 600})
-export class ConfirmationToken{
+export class Token{
     @PrimaryGeneratedColumn('uuid')
     userId: string
 

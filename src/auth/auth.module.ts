@@ -6,7 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OtpEntity } from '../otp/entity/otp.entity';
 import { EmailModule } from 'src/email/email.module';
-import { ConfirmationTokenModule } from 'src/confirmationToken/confirmToken.module';
+import { TokenModule } from 'src/token/token.module';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
@@ -21,7 +21,7 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
     TypeOrmModule.forFeature([OtpEntity]),
     EmailModule,
-    ConfirmationTokenModule,
+    TokenModule,
 
 
   ]

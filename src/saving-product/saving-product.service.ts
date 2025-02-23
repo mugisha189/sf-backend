@@ -7,6 +7,7 @@ import { CreateSavingProductDto } from './dto/create-saving-product.dto';
 import { UpdateSavingProductDto } from './dto/update-saving-product.dto';
 import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
 import { CompanyProduct } from 'src/company-products/entities/company-product.entity';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class SavingProductService {
@@ -15,6 +16,7 @@ export class SavingProductService {
     @InjectRepository(EntryPoint) private entryPointRepo: Repository<EntryPoint>,
     @InjectRepository(PartnerCompany) private partnerCompanyRepo: Repository<PartnerCompany>,
     @InjectRepository(CompanyProduct) private companyProductRepo: Repository<CompanyProduct>,
+    private cloudinaryService: CloudinaryService
   ) { }
 
   async create(createSavingProductDto: CreateSavingProductDto, productLogo: Express.Multer.File): Promise<SavingProduct> {
@@ -24,9 +26,12 @@ export class SavingProductService {
       const company = await this.partnerCompanyRepo.findOne({ where: { id: companyId } });
       if (!company) throw new NotFoundException('Company not found');
 
+      const logo = await this.cloudinaryService.uploadFile(productLogo, "saving-products");
+
       const savingProduct = this.savingProductRepo.create({
         ...savingProductData,
         company,
+        productLogo: logo.imageUrl
       });
 
       const savedProduct = await this.savingProductRepo.save(savingProduct);
@@ -61,13 +66,19 @@ export class SavingProductService {
     return savingProduct;
   }
 
-  async update(id: string, updateSavingProductDto: UpdateSavingProductDto, productLogo: Express.Multer.File): Promise<SavingProduct> {
+  async update(id: string, updateSavingProductDto: UpdateSavingProductDto, productLogo?: Express.Multer.File): Promise<SavingProduct> {
     const existingProduct = await this.savingProductRepo.findOne({ where: { id, deleted: false } });
     if (!existingProduct) throw new NotFoundException('Saving product not found');
 
+    let logoUrl = existingProduct.productLogo;
+    if (productLogo) {
+      const logo = await this.cloudinaryService.uploadFile(productLogo, "saving-products");
+      logoUrl = logo.imageUrl;
+    }
+
     if (updateSavingProductDto.entryPoints) {
       const { entryPoints } = updateSavingProductDto;
-      const existingEntryPoints = existingProduct.entryPoints;
+      const existingEntryPoints = existingProduct.entryPoints || [];
 
       const entryPointEntities = await Promise.all(
         entryPoints.map(async (entryPoint) => {
@@ -87,7 +98,7 @@ export class SavingProductService {
       await this.entryPointRepo.save(entryPointEntities);
     }
 
-    await this.savingProductRepo.update(id, updateSavingProductDto);
+    await this.savingProductRepo.update(id, { ...updateSavingProductDto, productLogo: logoUrl });
 
     return this.findOne(id);
   }

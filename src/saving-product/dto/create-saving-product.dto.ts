@@ -68,21 +68,16 @@ export class CreateSavingProductDto {
     cashBackMinimumCash: number;
 
     @IsNotEmpty()
-    @Transform(({ value }) => parseFloat(value)) 
+    @Transform(({ value }) => parseFloat(value))
     @ApiProperty()
     cashBackMaximumCash: number;
 
-    @IsArray()
+    @ApiProperty({ type: [CreateEntryPointDto] })
     @ValidateNested({ each: true })
     @Type(() => CreateEntryPointDto)
-    @Transform(({ value }) => {
-        if (typeof value === "string") {
-            return JSON.parse(value); 
-        }
-        return value;
-    })
-    @ApiProperty({ type: [CreateEntryPointDto] })
+    @IsArray()
     entryPoints: CreateEntryPointDto[];
+
 
     @IsOptional()
     @ApiProperty({ type: "string", format: "binary" })

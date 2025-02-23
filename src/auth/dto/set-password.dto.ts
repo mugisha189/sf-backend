@@ -1,14 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
 
-export class createConfirmTokenDto{
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    userId: string;
+
+export class SetPasswordDto {
+
 
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    token: string;
+    token: string
+
+
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    password: string
+
 }

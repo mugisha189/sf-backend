@@ -3,11 +3,11 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './entity/users.entity';
-import { ConfirmationTokenModule } from 'src/confirmationToken/confirmToken.module';
+import { TokenModule } from 'src/token/token.module';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Users]), ConfirmationTokenModule, CloudinaryModule],
+  imports: [TypeOrmModule.forFeature([Users]), TokenModule, CloudinaryModule],
   providers: [UsersService],
   exports: [UsersService],
   controllers: [UsersController]

@@ -13,7 +13,7 @@ import { UserRole } from 'src/constants/role.enum';
 @UseGuards(AuthGuard, RolesGuard)
 @ApiBearerAuth('access-token')
 export class CompanyProductsController {
-  constructor(private readonly companyProductsService: CompanyProductsService) {}
+  constructor(private readonly companyProductsService: CompanyProductsService) { }
 
   @ApiOperation({ summary: "Create a company product" })
   @ApiResponse({
@@ -24,7 +24,7 @@ export class CompanyProductsController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async createCompanyProduct(@Body() createCompanyProductDto: CreateCompanyProductDto, @Req() req: any) {
-    const result = await this.companyProductsService.create( createCompanyProductDto);
+    const result = await this.companyProductsService.create(createCompanyProductDto, req.user);
     return new CustomApiResponse("Created  company product successfully", result)
   }
 
@@ -38,6 +38,20 @@ export class CompanyProductsController {
   @HttpCode(HttpStatus.OK)
   async findAllCompanyProducts() {
     const result = await this.companyProductsService.findAll();
+    return new CustomApiResponse("Fetched all company products successfully", result)
+  }
+
+
+  @ApiOperation({ summary: "Get my company products" })
+  @ApiResponse({
+    status: 200,
+    description: "retrieved all successfully"
+  })
+  @Get("/mine")
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN, UserRole.SUBSCRIBER)
+  @HttpCode(HttpStatus.OK)
+  async findMyCompanyProducts(@Req() req: any) {
+    const result = await this.companyProductsService.findMine(req.user);
     return new CustomApiResponse("Fetched all company products successfully", result)
   }
 
@@ -63,7 +77,7 @@ export class CompanyProductsController {
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   async update(@Param('id') id: string, @Body() updateCompanyProductDto: UpdateCompanyProductDto) {
-    const result = await this.companyProductsService.update( id, updateCompanyProductDto);
+    const result = await this.companyProductsService.update(id, updateCompanyProductDto);
     return new CustomApiResponse("Updated company product successfully", result)
   }
 
@@ -76,6 +90,7 @@ export class CompanyProductsController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   @HttpCode(HttpStatus.OK)
   async removePartnerComp(@Param('id') id: string) {
+    console.log(id)
     const result = await this.companyProductsService.remove(id);
     return new CustomApiResponse("Delete company product successfully", result)
   }

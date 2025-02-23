@@ -6,10 +6,12 @@ import { SavingProduct } from './entities/saving-product.entity';
 import { EntryPoint } from './entities/entry-points.entity';
 import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
 import { CompanyProduct } from 'src/company-products/entities/company-product.entity';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SavingProduct, EntryPoint, PartnerCompany, CompanyProduct])
+    TypeOrmModule.forFeature([SavingProduct, EntryPoint, PartnerCompany, CompanyProduct]),
+    CloudinaryModule
   ],
   controllers: [SavingProductController],
   providers: [SavingProductService],

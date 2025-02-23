@@ -5,14 +5,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PartnerCompany } from './entities/partner-company.entity';
 import { Users } from 'src/users/entity/users.entity';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { EmailModule } from 'src/email/email.module';
+import { TokenModule } from 'src/token/token.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([PartnerCompany, Users]),
-    CloudinaryModule
+    CloudinaryModule,
+    EmailModule,
+    TokenModule
   ],
   controllers: [PartnerCompanyController],
   providers: [PartnerCompanyService],
-  
+
 })
-export class PartnerCompanyModule {}
+export class PartnerCompanyModule { }

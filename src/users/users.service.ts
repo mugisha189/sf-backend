@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ConfirmationTokenService } from 'src/confirmationToken/confirmToken.service';
+import { TokenService } from 'src/token/token.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
@@ -14,7 +14,7 @@ export class UsersService {
   private avatarFolderName: string;
 
   constructor(
-    private confirmTokenService: ConfirmationTokenService,
+    private tokenService: TokenService,
     private cloudinaryService: CloudinaryService,
     @InjectRepository(Users) private userRepo: Repository<Users>,
   ) {
@@ -46,18 +46,23 @@ export class UsersService {
     return user;
   }
 
+
+
   async findAll(): Promise<Users[]> {
     return await this.userRepo.find();
   }
 
   async updatePassword(changePasswordDto: ChangePasswordDto): Promise<Users> {
-    const user = await this.userRepo.findOneBy({ email: changePasswordDto.email });
-    if (!user) throw new BadRequestException("Invalid link or expired");
 
-    const confirmToken = await this.confirmTokenService.findOneByUserId(user.id);
-    if (!confirmToken || confirmToken.token !== changePasswordDto.token) {
+    console.log(changePasswordDto)
+    const token = await this.tokenService.findOneByToken(changePasswordDto.token)
+    console.log(token)
+    if (!token || token.token !== changePasswordDto.token) {
       throw new BadRequestException("Invalid link or expired");
     }
+
+    const user = await this.userRepo.findOneBy({ id: token.userId });
+    if (!user) throw new BadRequestException("Invalid link or expired");
 
     user.password = await bcrypt.hash(changePasswordDto.newPassword, 10);
     return await this.userRepo.save(user);

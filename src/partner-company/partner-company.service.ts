@@ -10,6 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { Users } from 'src/users/entity/users.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { EmailService } from 'src/email/email.service';
+import { JwtService } from '@nestjs/jwt';
+import { TokenService } from 'src/token/token.service';
 
 @Injectable()
 export class PartnerCompanyService {
@@ -18,7 +21,10 @@ export class PartnerCompanyService {
     @InjectRepository(Users) private userRepo: Repository<Users>,
     private configService: ConfigService,
     private datasource: DataSource,
-    private cloudinaryService: CloudinaryService
+    private cloudinaryService: CloudinaryService,
+    private tokenService: TokenService,
+    private emailService: EmailService,
+    private jwtService: JwtService
   ) { }
 
   async create(createPartnerCompanyDto: CreatePartnerCompanyDto): Promise<PartnerCompany> {
@@ -36,13 +42,21 @@ export class PartnerCompanyService {
       companyAdmin.nationalId = createPartnerCompanyDto.adminNationalId;
       companyAdmin.role = UserRole.COMPANY_ADMIN;
       companyAdmin.password = await bcrypt.hash("Default@123", 10);
-
-
       const savedAdmin = await this.userRepo.save(companyAdmin);
-
       partnerCompany.companyAdmin = savedAdmin;
+      const savedCompany = await this.partnerCompanyRepo.save(partnerCompany);
+      const token = await this.jwtService.signAsync({
+        userId: savedAdmin.id, email: companyAdmin.email, role: "COMPANY_ADMIN"
+      }, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: "10d",
+      });
+      await this.tokenService.createtoken({ token, userId: savedAdmin.id })
+      await this.emailService.sendPartnerCompanyWelcomeEmail(savedAdmin.email, savedCompany.companyName);
+      const setupLink = `${this.configService.get("FRONTEND_BASE_URL")}/set-password?token=${token}`;
+      await this.emailService.sendPartnerCompanySetupEmail(savedAdmin.email, savedCompany.companyName, setupLink);
 
-      return await this.partnerCompanyRepo.save(partnerCompany);
+      return savedCompany;
     } catch (error) {
       throw error;
     }
