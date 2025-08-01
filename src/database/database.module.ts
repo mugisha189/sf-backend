@@ -1,33 +1,42 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from "@nestjs/config"
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CompanyProduct } from 'src/company-products/entities/company-product.entity';
 import { Token } from 'src/token/entity/token.entity';
 import { OtpEntity } from 'src/otp/entity/otp.entity';
-import { PartnerCompany } from 'src/partner-company/entities/partner-company.entity';
-import { ProductPurchase } from 'src/product-purchases/entities/product-purchase.entity';
-import { EntryPoint } from 'src/saving-product/entities/entry-points.entity';
-import { SavingProduct } from 'src/saving-product/entities/saving-product.entity';
-import { Users } from 'src/users/entity/users.entity';
+import { ServiceProvider } from 'src/service-provider/entities/service-provider.entity';
+import { User } from 'src/users/entity/users.entity';
+import { SavingInstitution } from 'src/saving-institutions/entities/saving-institution.entity';
+import { ServiceProviderProduct } from 'src/service-provider-products/entities/service-provider-product.entity';
+import { SavingProduct } from 'src/saving-products/entities/saving-product.entity';
+import { UserSubscription } from 'src/users/entity/user-subscription.entity';
 @Module({
-    imports: [
-        ConfigModule.forRoot(),
-        TypeOrmModule.forRootAsync({
-            imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => ({
-                type: 'postgres',
-                host: configService.get('DATABASE_HOST'),
-                port: configService.get('DATABASE_PORT'),
-                password: configService.get('DATABASE_PASSWORD'),
-                username: configService.get('DATABASE_USER'),
-                entities: [Users, OtpEntity, Token, CompanyProduct, PartnerCompany, SavingProduct, ProductPurchase, EntryPoint],
-                // entities: [__dirname + '/../**/*.entity{.ts}'],
-                database: configService.get('DATABASE_NAME'),
-                synchronize: true,
-                logging: true,
-            }),
-            inject: [ConfigService]
-        })
-    ]
+  imports: [
+    ConfigModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DATABASE_HOST'),
+        port: configService.get('DATABASE_PORT'),
+        password: configService.get('DATABASE_PASSWORD'),
+        username: configService.get('DATABASE_USER'),
+        entities: [
+          User,
+          OtpEntity,
+          Token,
+          ServiceProvider,
+          SavingInstitution,
+          ServiceProviderProduct,
+          SavingProduct,
+          UserSubscription,
+        ],
+        // entities: [__dirname + '/../**/*.entity{.ts}'],
+        database: configService.get('DATABASE_NAME'),
+        synchronize: true,
+        logging: true,
+      }),
+      inject: [ConfigService],
+    }),
+  ],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

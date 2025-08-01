@@ -6,7 +6,7 @@ import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OtpEntity } from 'src/otp/entity/otp.entity';
-import { Users } from 'src/users/entity/users.entity';
+import { User } from 'src/users/entity/users.entity';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
@@ -62,7 +62,7 @@ import { UsersModule } from 'src/users/users.module';
         }
       }
     }),
-    TypeOrmModule.forFeature([OtpEntity, Users]),
+    TypeOrmModule.forFeature([OtpEntity, User]),
     UsersModule
 
   ]

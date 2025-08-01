@@ -1,5 +1,5 @@
 
-export const welcomeEmailTemplate = (companyName: string) => {
+export const welcomeEmailTemplate = (name: string) => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -47,7 +47,7 @@ export const welcomeEmailTemplate = (companyName: string) => {
         <div class="container">
             <div class="header">Welcome to SF Rwanda</div>
             <div class="content">
-                <p>Dear ${companyName} Team,</p>
+                <p>Dear ${name} Team,</p>
                 <p>We are delighted to welcome you to SF Rwanda! Your company is now part of an innovative ecosystem dedicated to excellence and partnership.</p>
                 <p>At SF Rwanda, we believe in strong collaborations and providing our partners with the tools and support needed for success. We are excited to embark on this journey with you.</p>
                 <p>If you have any questions, feel free to reach out to our support team. We look forward to a prosperous partnership.</p>
@@ -63,7 +63,7 @@ export const welcomeEmailTemplate = (companyName: string) => {
 };
 
 
-export const setupAccountEmailTemplate = (companyName: string, setupLink: string) => {
+export const setupAccountEmailTemplate = (name: string, setupLink: string) => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -121,7 +121,7 @@ export const setupAccountEmailTemplate = (companyName: string, setupLink: string
         <div class="container">
             <div class="header">Set Up Your Account</div>
             <div class="content">
-                <p>Dear ${companyName} Team,</p>
+                <p>Dear ${name} Team,</p>
                 <p>Your partnership with SF Rwanda has been successfully registered! To start using our platform, please set up your account by clicking the button below.</p>
                 <a href="${setupLink}" class="button" target="_blank">Set Up Your Account</a>
                 <p>If you experience any issues, feel free to contact our support team.</p>

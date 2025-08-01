@@ -1,53 +1,48 @@
-import { BadRequestException, CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { Request } from "express";
-import { ConfigService } from "@nestjs/config";
+import {
+  BadRequestException,
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor(private jwtService: JwtService, private configService: ConfigService) { }
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
 
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest()
-        const token = this.extractTokenFromHeader(request)
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(request);
 
-        // Check if jwtToken is provided
-        if (!token) {
-            throw new UnauthorizedException("No jwtToken provided")
-        }
-
-
-
-        try {
-
-            console.log(token)
-
-            // Obtain the payload from the jwtToken
-            const payload = await this.jwtService.verifyAsync(
-                token,
-                {
-                    secret: this.configService.get<string>('JWT_SECRET')
-                }
-            )
-
-            console.log(payload);
-
-
-            // Pass the payload the request as 'user'
-            request['user'] = payload
-        } catch (error) {
-            if (error instanceof UnauthorizedException) {
-                throw new UnauthorizedException(error.message)
-            }
-            throw new BadRequestException(error.message)
-        }
-
-        return true
+    // Check if jwtToken is provided
+    if (!token) {
+      throw new UnauthorizedException('No jwtToken provided');
     }
 
-    private extractTokenFromHeader(request: Request): string | undefined {
-        const [type, token] = request.headers.authorization?.split(' ') ?? []
-        return type === 'Bearer' ? token : undefined
+    try {
+      const payload: any = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+      // Pass the payload the request as 'user'
+      request['user'] = payload;
+    } catch (error: any) {
+      if (error instanceof UnauthorizedException) {
+        throw new UnauthorizedException(error.message);
+      }
+      throw new BadRequestException(error.message);
     }
 
+    return true;
+  }
+
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
+  }
 }
