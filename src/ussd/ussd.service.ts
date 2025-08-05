@@ -156,7 +156,6 @@ export class UssdService {
     if (input[1] === '2' && level >= 3) {
       return this.subscriptionPaginationAndSelection(sessionKey, input, user);
     }
-
     return `END Invalid selection`;
   }
 
