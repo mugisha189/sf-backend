@@ -11,7 +11,10 @@ import { CreateSavingProductDto } from './dto/create-saving-product.dto';
 import { UpdateSavingProductDto } from './dto/update-saving-product.dto';
 import { SavingProductStatus } from './enums/saving-product-status.enum';
 import { SavingInstitution } from 'src/saving-institutions/entities/saving-institution.entity';
-import { ServiceProviderProduct } from 'src/service-provider-products/entities/service-provider-product.entity';
+import { SubSavingProduct } from './entities/sub-saving-product.entity';
+import { CreateSubSavingProductDto } from './dto/create-sub-saving-product.dto';
+import { UpdateSubSavingProductDto } from './dto/update-sub-saving-product.dto';
+import { SubSavingProductStatus } from './enums/sub-saving-product-status.enum';
 
 @Injectable()
 export class SavingProductService {
@@ -22,8 +25,8 @@ export class SavingProductService {
     @InjectRepository(SavingInstitution)
     private readonly institutionRepo: Repository<SavingInstitution>,
 
-    @InjectRepository(ServiceProviderProduct)
-    private readonly providerProductRepo: Repository<ServiceProviderProduct>,
+    @InjectRepository(SubSavingProduct)
+    private readonly subProductRepo: Repository<SubSavingProduct>,
   ) {}
 
   async create(createDto: CreateSavingProductDto): Promise<SavingProduct> {
@@ -34,25 +37,13 @@ export class SavingProductService {
       throw new NotFoundException('Saving institution not found.');
     }
 
-    let serviceProviderProduct: ServiceProviderProduct | null = null;
-    if (createDto.serviceProviderProductId) {
-      serviceProviderProduct = await this.providerProductRepo.findOne({
-        where: { id: createDto.serviceProviderProductId },
-      });
-      if (!serviceProviderProduct) {
-        throw new NotFoundException('Service provider product not found.');
-      }
-    }
-
     const savingProduct = this.productRepo.create({
       name: createDto.name,
       description: createDto.description,
       cashBackPercentage: createDto.cashBackPercentage,
-      serviceProviderDividend: createDto.serviceProviderDividend,
       sfDividend: createDto.sfDividend,
       savingProductDividend: createDto.savingProductDividend,
       savingInstitution,
-      ...(serviceProviderProduct && { serviceProviderProduct }),
     });
 
     return this.productRepo.save(savingProduct);
@@ -135,16 +126,6 @@ export class SavingProductService {
         throw new NotFoundException('Saving institution not found.');
       product.savingInstitution = institution;
     }
-
-    if (updateDto.serviceProviderProductId) {
-      const providerProduct = await this.providerProductRepo.findOne({
-        where: { id: updateDto.serviceProviderProductId },
-      });
-      if (!providerProduct)
-        throw new NotFoundException('Service provider product not found.');
-      product.serviceProviderProduct = providerProduct;
-    }
-
     Object.assign(product, updateDto);
     return this.productRepo.save(product);
   }
@@ -167,6 +148,59 @@ export class SavingProductService {
     const result = await this.productRepo.delete(id);
     if (result.affected === 0)
       throw new NotFoundException('Saving product not found.');
+    return true;
+  }
+
+  async addSubProduct(
+    productId: string,
+    dto: CreateSubSavingProductDto,
+  ): Promise<SubSavingProduct> {
+    const product = await this.findOne(productId);
+    const subProduct = this.subProductRepo.create({
+      title: dto.title,
+      amount: dto.amount,
+      savingProduct: product,
+    });
+    return this.subProductRepo.save(subProduct);
+  }
+
+  async getSubProducts(productId: string): Promise<SubSavingProduct[]> {
+    const product = await this.findOne(productId);
+    return this.subProductRepo.find({
+      where: { savingProduct: product },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async updateSubProduct(
+    subProductId: string,
+    dto: UpdateSubSavingProductDto,
+  ): Promise<SubSavingProduct> {
+    const subProduct = await this.subProductRepo.findOne({
+      where: { id: subProductId },
+    });
+    if (!subProduct) throw new NotFoundException('Subproduct not found.');
+    Object.assign(subProduct, dto);
+    return this.subProductRepo.save(subProduct);
+  }
+
+  async activateSubProduct(subProductId: string): Promise<boolean> {
+    const subProduct = await this.subProductRepo.findOne({
+      where: { id: subProductId },
+    });
+    if (!subProduct) throw new NotFoundException('Subproduct not found.');
+    subProduct.status = SubSavingProductStatus.ACTIVE;
+    await this.subProductRepo.save(subProduct);
+    return true;
+  }
+
+  async deactivateSubProduct(subProductId: string): Promise<boolean> {
+    const subProduct = await this.subProductRepo.findOne({
+      where: { id: subProductId },
+    });
+    if (!subProduct) throw new NotFoundException('Subproduct not found.');
+    subProduct.status = SubSavingProductStatus.INACTIVE;
+    await this.subProductRepo.save(subProduct);
     return true;
   }
 }

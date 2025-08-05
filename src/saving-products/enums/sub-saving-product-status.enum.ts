@@ -1,4 +1,4 @@
-export enum ServiceProviderProductStatus {
+export enum SubSavingProductStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
 }

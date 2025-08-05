@@ -6,9 +6,9 @@ import { OtpEntity } from 'src/otp/entity/otp.entity';
 import { ServiceProvider } from 'src/service-provider/entities/service-provider.entity';
 import { User } from 'src/users/entity/users.entity';
 import { SavingInstitution } from 'src/saving-institutions/entities/saving-institution.entity';
-import { ServiceProviderProduct } from 'src/service-provider-products/entities/service-provider-product.entity';
 import { SavingProduct } from 'src/saving-products/entities/saving-product.entity';
 import { UserSubscription } from 'src/users/entity/user-subscription.entity';
+import { SubSavingProduct } from 'src/saving-products/entities/sub-saving-product.entity';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -26,8 +26,8 @@ import { UserSubscription } from 'src/users/entity/user-subscription.entity';
           Token,
           ServiceProvider,
           SavingInstitution,
-          ServiceProviderProduct,
           SavingProduct,
+          SubSavingProduct,
           UserSubscription,
         ],
         // entities: [__dirname + '/../**/*.entity{.ts}'],

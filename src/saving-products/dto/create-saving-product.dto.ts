@@ -59,11 +59,4 @@ export class CreateSavingProductDto {
   @ApiProperty({ description: 'ID of the saving institution' })
   @IsUUID()
   savingInstitutionId: string;
-
-  @ApiPropertyOptional({
-    description: 'ID of the service provider product (optional)',
-  })
-  @IsOptional()
-  @IsUUID()
-  serviceProviderProductId?: string;
 }

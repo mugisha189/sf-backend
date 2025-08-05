@@ -4,13 +4,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { IsEnum } from 'class-validator';
 import { SavingProductStatus } from '../enums/saving-product-status.enum';
 import { SavingInstitution } from 'src/saving-institutions/entities/saving-institution.entity';
-import { ServiceProviderProduct } from 'src/service-provider-products/entities/service-provider-product.entity';
+import { SubSavingProduct } from './sub-saving-product.entity';
 @Entity()
 export class SavingProduct {
   @PrimaryGeneratedColumn('uuid')
@@ -45,16 +46,10 @@ export class SavingProduct {
   @JoinColumn()
   savingInstitution: SavingInstitution;
 
-  @ManyToOne(
-    () => ServiceProviderProduct,
-    (product) => product.savingProducts,
-    {
-      onDelete: 'SET NULL',
-      nullable: true,
-    },
-  )
-  @JoinColumn()
-  serviceProviderProduct: ServiceProviderProduct;
+  @OneToMany(() => SubSavingProduct, (subProduct) => subProduct.savingProduct, {
+    cascade: true,
+  })
+  subSavingProducts: SubSavingProduct[];
 
   @Column({
     type: 'enum',

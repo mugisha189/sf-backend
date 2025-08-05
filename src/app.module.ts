@@ -11,7 +11,6 @@ import { SeedsModule } from './seeds/seeds.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entity/users.entity';
 import { SavingInstitutionModule } from './saving-institutions/saving-institution.module';
-import { ServiceProviderProductModule } from './service-provider-products/service-provider-product.module';
 import { SavingProductModule } from './saving-products/saving-product.module';
 import { UssdModule } from './ussd/ussd.module';
 
@@ -27,7 +26,6 @@ import { UssdModule } from './ussd/ussd.module';
     EmailModule,
     ServiceProviderModule,
     SavingInstitutionModule,
-    ServiceProviderProductModule,
     SavingProductModule,
     SeedsModule,
     CloudinaryModule,

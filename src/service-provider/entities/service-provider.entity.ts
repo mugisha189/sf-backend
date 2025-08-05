@@ -3,21 +3,24 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { IsEnum } from 'class-validator';
 import { User } from 'src/users/entity/users.entity';
 import { ServiceProviderStatus } from '../enums/service-provider-status.enum';
 import { ServiceProviderCompanyType } from '../enums/service-provider-type.enum';
-import { ServiceProviderProduct } from 'src/service-provider-products/entities/service-provider-product.entity';
+import { getManager } from 'typeorm';
 
 @Entity()
 export class ServiceProvider {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ type: 'int', unique: true })
+  code: number;
 
   @OneToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn()
@@ -28,13 +31,9 @@ export class ServiceProvider {
 
   @Column({ type: 'enum', enum: Object.values(ServiceProviderCompanyType) })
   @IsEnum(ServiceProviderCompanyType, {
-    message:
-      'Company type must be either TELECOM, PETROL_STATIONS, or SUPER_MARKET',
+    message: 'Company type must be either TELECOM, PETROL_STATIONS, or SHOP',
   })
   type: ServiceProviderCompanyType;
-
-  @OneToMany(() => ServiceProviderProduct, (product) => product.serviceProvider)
-  products: ServiceProviderProduct[];
 
   @Column({
     type: 'enum',
@@ -54,5 +53,16 @@ export class ServiceProvider {
 
   constructor(partial: Partial<ServiceProvider>) {
     Object.assign(this, partial);
+  }
+
+  @BeforeInsert()
+  async generateCode() {
+    const result: { max: string | null } | undefined = await getManager()
+      .createQueryBuilder(ServiceProvider, 'sp')
+      .select('MAX(sp.code)', 'max')
+      .getRawOne();
+
+    const maxCode = result?.max ? parseInt(result.max, 10) : 0;
+    this.code = maxCode + 1;
   }
 }

@@ -26,6 +26,8 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { UserRole } from 'src/constants/role.enum';
 import { SavingProductStatus } from './enums/saving-product-status.enum';
+import { CreateSubSavingProductDto } from './dto/create-sub-saving-product.dto';
+import { UpdateSubSavingProductDto } from './dto/update-sub-saving-product.dto';
 
 @Controller('saving-product')
 @UseGuards(AuthGuard, RolesGuard)
@@ -121,5 +123,64 @@ export class SavingProductController {
       'Service provider product deleted successfully.',
       result,
     );
+  }
+
+  @Post(':id/subproducts')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Add subproducts to a saving product' })
+  @HttpCode(HttpStatus.CREATED)
+  async addSubProducts(
+    @Param('id') productId: string,
+    @Body() dto: CreateSubSavingProductDto,
+  ) {
+    const result = await this.savingProductService.addSubProduct(
+      productId,
+      dto,
+    );
+    return new CustomApiResponse(
+      'Subproduct added successfully to the saving product.',
+      result,
+    );
+  }
+
+  @Get(':id/subproducts')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get subproducts for a saving product' })
+  async getSubProducts(@Param('id') productId: string) {
+    const result = await this.savingProductService.getSubProducts(productId);
+    return new CustomApiResponse(
+      'Fetched subproducts for saving product successfully.',
+      result,
+    );
+  }
+
+  @Put('subproducts/:id')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update a subproduct' })
+  async updateSubProduct(
+    @Param('id') subProductId: string,
+    @Body() dto: UpdateSubSavingProductDto,
+  ) {
+    const result = await this.savingProductService.updateSubProduct(
+      subProductId,
+      dto,
+    );
+    return new CustomApiResponse('Subproduct updated successfully.', result);
+  }
+
+  @Put('subproducts/:id/activate')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Activate a subproduct' })
+  async activateSubProduct(@Param('id') subProductId: string) {
+    await this.savingProductService.activateSubProduct(subProductId);
+    return new CustomApiResponse('Subproduct activated successfully.', true);
+  }
+
+  @Put('subproducts/:id/deactivate')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Deactivate a subproduct' })
+  async deactivateSubProduct(@Param('id') subProductId: string) {
+    await this.savingProductService.deactivateSubProduct(subProductId);
+    return new CustomApiResponse('Subproduct deactivated successfully.', true);
   }
 }
