@@ -55,14 +55,37 @@ export class UsersService {
   async findUserById(userId: string): Promise<User> {
     const user = await this.userRepo.findOne({
       where: { id: userId },
-      relations: ['serviceProvider', 'savingInstitution'],
+      relations: [
+        'serviceProvider',
+        'savingInstitution',
+        'userCooperatives',
+        'userCooperatives.cooperative',
+      ],
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    const simplifiedCooperatives: {
+      id: string;
+      role: string;
+      cooperative: {
+        id: string;
+        name: string;
+      };
+    }[] = user.userCooperatives.map((link) => ({
+      id: link.id,
+      role: link.role,
+      cooperative: {
+        id: link.cooperative.id,
+        name: link.cooperative.name,
+      },
+    }));
 
-    return user;
+    return {
+      ...user,
+      userCooperatives: simplifiedCooperatives as any,
+    };
   }
 
   async findAll(): Promise<User[]> {
@@ -123,7 +146,7 @@ export class UsersService {
       email: `${data.phoneNumber}@ussd.local`,
       phoneNumber: data.phoneNumber,
       nationalId: data.nationalId,
-      role: UserRole.SUBSCRIBER,
+      role: UserRole.USER,
       password: await bcrypt.hash('12345', 10),
     });
 

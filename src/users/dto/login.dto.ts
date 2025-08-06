@@ -1,18 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty} from "class-validator";
-
-const passwordRegEx =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[@$!%*?&])[A-Za-zd@$!%*?&]{8,20}$/;
-
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
-    
-    @ApiProperty()
-    @IsEmail()
-    @IsNotEmpty()
-    email: string
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  identifier: string;
 
-    @ApiProperty()
-    @IsNotEmpty()
-    password: string
+  @ApiProperty()
+  @IsNotEmpty()
+  password: string;
 }

@@ -37,70 +37,92 @@ export class ServiceProviderService {
 
   /** Create service provider with admin user */
   async create(createDto: CreateServiceProviderDto): Promise<ServiceProvider> {
-    return this.datasource.transaction(async (manager) => {
-      try {
-        const existing = await this.userRepo.findOne({
-          where: { email: createDto.admin.email },
-        });
-        if (existing)
-          throw new BadRequestException('Email is already registered.');
+    const queryRunner = this.datasource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-        const admin = this.userRepo.create({
-          firstName: createDto.admin.firstName,
-          lastName: createDto.admin.lastName,
-          phoneNumber: createDto.admin.phoneNumber,
-          email: createDto.admin.email,
-          nationalId: createDto.admin.nationalId,
-          role: UserRole.SERVICE_PROVIDER_ADMIN,
-          password: await bcrypt.hash('Default@123', 10),
-        });
-        const savedAdmin = await manager.save(admin);
+    try {
+      const existing = await this.userRepo.findOne({
+        where: { email: createDto.admin.email },
+      });
+      if (existing)
+        throw new BadRequestException('Email is already registered.');
 
-        const serviceProvider = this.serviceProviderRepo.create({
-          name: createDto.name,
-          type: createDto.companyType,
-          admin: savedAdmin,
-        });
-        const savedProvider = await manager.save(serviceProvider);
+      const admin = this.userRepo.create({
+        firstName: createDto.admin.firstName,
+        lastName: createDto.admin.lastName,
+        phoneNumber: createDto.admin.phoneNumber,
+        email: createDto.admin.email,
+        nationalId: createDto.admin.nationalId,
+        role: UserRole.SERVICE_PROVIDER_ADMIN,
+        password: await bcrypt.hash('Default@123', 10),
+      });
 
-        const token = await this.jwtService.signAsync(
-          {
-            userId: savedAdmin.id,
-            email: savedAdmin.email,
-            role: savedAdmin.role,
-          },
-          {
-            secret: this.configService.get<string>('JWT_SECRET'),
-            expiresIn: '10d',
-          },
-        );
+      const savedAdmin = await queryRunner.manager.save(admin);
 
-        await this.tokenService.createtoken({ token, userId: savedAdmin.id });
+      const result: { max: string | null } | undefined =
+        await queryRunner.manager
+          .createQueryBuilder(ServiceProvider, 'sp')
+          .select('MAX(sp.code)', 'max')
+          .getRawOne();
 
-        const setupLink = `${this.configService.get(
-          'FRONTEND_BASE_URL',
-        )}/set-password?token=${token}`;
+      const maxCode = result?.max ? parseInt(result.max, 10) : 0;
+      const nextCode = maxCode + 1;
 
-        await this.emailService.sendServiceProviderWelcomeEmail(
-          savedAdmin.email,
-          savedProvider.name,
-        );
+      const serviceProvider = this.serviceProviderRepo.create({
+        name: createDto.name,
+        type: createDto.companyType,
+        admin: savedAdmin,
+        code: nextCode,
+      });
 
-        await this.emailService.sendServiceProviderSetupEmail(
-          savedAdmin.email,
-          savedProvider.name,
-          setupLink,
-        );
+      const savedProvider = await queryRunner.manager.save(serviceProvider);
 
-        return savedProvider;
-      } catch (error) {
-        throw error instanceof BadRequestException
-          ? error
-          : new InternalServerErrorException(
-              'Failed to create service provider. Please try again.',
-            );
-      }
-    });
+      const token = await this.jwtService.signAsync(
+        {
+          userId: savedAdmin.id,
+          email: savedAdmin.email,
+          role: savedAdmin.role,
+        },
+        {
+          secret: this.configService.get<string>('JWT_SECRET'),
+          expiresIn: '10d',
+        },
+      );
+
+      await this.tokenService.createtoken({
+        token,
+        userId: savedAdmin.id,
+      });
+
+      const setupLink = `${this.configService.get(
+        'FRONTEND_BASE_URL',
+      )}/set-password?token=${token}`;
+
+      await this.emailService.sendServiceProviderWelcomeEmail(
+        savedProvider.name,
+        savedAdmin.email || '',
+      );
+
+      await this.emailService.sendServiceProviderSetupEmail(
+        savedProvider.name,
+        setupLink,
+        savedAdmin.email || '',
+      );
+
+      await queryRunner.commitTransaction();
+      return savedProvider;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(error);
+      throw error instanceof BadRequestException
+        ? error
+        : new InternalServerErrorException(
+            'Failed to create service provider. Please try again.',
+          );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /** Get all providers */
@@ -118,8 +140,7 @@ export class ServiceProviderService {
     try {
       const query = this.serviceProviderRepo
         .createQueryBuilder('serviceProvider')
-        .leftJoinAndSelect('serviceProvider.admin', 'admin')
-        .leftJoinAndSelect('serviceProvider.products', 'products');
+        .leftJoinAndSelect('serviceProvider.admin', 'admin');
 
       // Filter by status if provided
       if (status) {

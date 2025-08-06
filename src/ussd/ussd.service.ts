@@ -110,7 +110,10 @@ export class UssdService {
     if (level === 2) {
       const pin = input[1];
       try {
-        await this.authService.signIn({ email: user.email, password: pin });
+        await this.authService.signIn({
+          identifier: user.email || user.phoneNumber,
+          password: pin,
+        });
         this.sessionMap.set(sessionKey, {
           ...state,
           level: 2,

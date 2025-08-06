@@ -6,13 +6,11 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  BeforeInsert,
 } from 'typeorm';
 import { IsEnum } from 'class-validator';
 import { User } from 'src/users/entity/users.entity';
 import { ServiceProviderStatus } from '../enums/service-provider-status.enum';
 import { ServiceProviderCompanyType } from '../enums/service-provider-type.enum';
-import { getManager } from 'typeorm';
 
 @Entity()
 export class ServiceProvider {
@@ -53,16 +51,5 @@ export class ServiceProvider {
 
   constructor(partial: Partial<ServiceProvider>) {
     Object.assign(this, partial);
-  }
-
-  @BeforeInsert()
-  async generateCode() {
-    const result: { max: string | null } | undefined = await getManager()
-      .createQueryBuilder(ServiceProvider, 'sp')
-      .select('MAX(sp.code)', 'max')
-      .getRawOne();
-
-    const maxCode = result?.max ? parseInt(result.max, 10) : 0;
-    this.code = maxCode + 1;
   }
 }

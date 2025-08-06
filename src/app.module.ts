@@ -13,6 +13,7 @@ import { User } from './users/entity/users.entity';
 import { SavingInstitutionModule } from './saving-institutions/saving-institution.module';
 import { SavingProductModule } from './saving-products/saving-product.module';
 import { UssdModule } from './ussd/ussd.module';
+import { CooperativeModule } from './cooperative/cooperative.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UssdModule } from './ussd/ussd.module';
     ServiceProviderModule,
     SavingInstitutionModule,
     SavingProductModule,
+    CooperativeModule,
     SeedsModule,
     CloudinaryModule,
     TypeOrmModule.forFeature([User]),

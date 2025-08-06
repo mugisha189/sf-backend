@@ -61,13 +61,11 @@ export class EmailService {
   //         throw error
   //     }
   // }
-
   async sendServiceProviderWelcomeEmail(
-    email: string,
     name: string,
+    email?: string,
   ): Promise<boolean> {
-    if (!this.isValidEmail(email))
-      throw new UnauthorizedException('Email is not valid');
+    if (!email || !this.isValidEmail(email)) return false;
 
     const subject = 'Welcome to SF Rwanda';
     const htmlContent = welcomeEmailTemplate(name);
@@ -77,12 +75,11 @@ export class EmailService {
   }
 
   async sendServiceProviderSetupEmail(
-    email: string,
     name: string,
     setupLink: string,
+    email?: string,
   ): Promise<boolean> {
-    if (!this.isValidEmail(email))
-      throw new UnauthorizedException('Email is not valid');
+    if (!email || !this.isValidEmail(email)) return false;
 
     const subject = 'Set Up Your SF Rwanda Account';
     const htmlContent = setupAccountEmailTemplate(name, setupLink);
@@ -92,11 +89,10 @@ export class EmailService {
   }
 
   async sendSavingInstitutionWelcomeEmail(
-    email: string,
     name: string,
+    email?: string,
   ): Promise<boolean> {
-    if (!this.isValidEmail(email))
-      throw new UnauthorizedException('Email is not valid');
+    if (!email || !this.isValidEmail(email)) return false;
 
     const subject = 'Welcome to SF Rwanda';
     const htmlContent = welcomeEmailTemplate(name);
@@ -106,12 +102,11 @@ export class EmailService {
   }
 
   async sendSavingInstitutionSetupEmail(
-    email: string,
     name: string,
     setupLink: string,
+    email?: string,
   ): Promise<boolean> {
-    if (!this.isValidEmail(email))
-      throw new UnauthorizedException('Email is not valid');
+    if (!email || !this.isValidEmail(email)) return false;
 
     const subject = 'Set Up Your SF Rwanda Account';
     const htmlContent = setupAccountEmailTemplate(name, setupLink);
@@ -120,7 +115,34 @@ export class EmailService {
     return true;
   }
 
-  // async sendUserConfirmation(email: string, token: string): Promise<Boolean> {
+  async sendCooperativeWelcomeEmail(
+    name: string,
+    email?: string,
+  ): Promise<boolean> {
+    if (!email || !this.isValidEmail(email)) return false;
+
+    const subject = 'Welcome to SF Rwanda';
+    const htmlContent = welcomeEmailTemplate(name);
+
+    await this.sendEmail(email, subject, htmlContent);
+    return true;
+  }
+
+  async sendCooperativeSetupEmail(
+    name: string,
+    setupLink: string,
+    email?: string,
+  ): Promise<boolean> {
+    if (!email || !this.isValidEmail(email)) return false;
+
+    const subject = 'Set Up Your SF Rwanda Account';
+    const htmlContent = setupAccountEmailTemplate(name, setupLink);
+
+    await this.sendEmail(email, subject, htmlContent);
+    return true;
+  }
+
+  // async sendUserConfirmation(email?: string, token: string): Promise<Boolean> {
   //     try {
   //         // Check if client url is specified
   //         const clientUrl = this.configService.get("FRONTEND_BASE_URL")

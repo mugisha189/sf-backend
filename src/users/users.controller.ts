@@ -54,7 +54,7 @@ export class UsersController {
   // @UseGuards(AuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.SUBSCRIBER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.USER)
   async getAllUsers() {
     const result = await this.userService.findAll();
     return new CustomApiResponse('Retrived all successfully', result);

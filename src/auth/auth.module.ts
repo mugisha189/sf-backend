@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OtpEntity } from '../otp/entity/otp.entity';
 import { EmailModule } from 'src/email/email.module';
 import { TokenModule } from 'src/token/token.module';
+import { User } from 'src/users/entity/users.entity';
 
 @Module({
   controllers: [AuthController],
@@ -18,8 +19,7 @@ import { TokenModule } from 'src/token/token.module';
       global: true,
       signOptions: { expiresIn: '6000s' },
     }),
-
-    TypeOrmModule.forFeature([OtpEntity]),
+    TypeOrmModule.forFeature([OtpEntity, User]),
     EmailModule,
     TokenModule,
   ],

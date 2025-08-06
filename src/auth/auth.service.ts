@@ -27,13 +27,14 @@ export class AuthService {
     private emailService: EmailService,
     private tokenService: TokenService,
     @InjectRepository(OtpEntity) private otpRepo: Repository<OtpEntity>,
+    @InjectRepository(User) private userRepo: Repository<User>,
     private configService: ConfigService,
   ) {}
 
   private async generateTokens(
     userId: string,
-    email: string,
     role: string,
+    email?: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       const payload = { userId, email, role };
@@ -59,7 +60,13 @@ export class AuthService {
     loginDto: LoginDto,
   ): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     try {
-      const user = await this.usersService.findUserByEmail(loginDto.email);
+      const user = await this.userRepo.findOne({
+        where: [
+          { email: loginDto.identifier },
+          { nationalId: loginDto.identifier },
+          { phoneNumber: loginDto.identifier },
+        ],
+      });
 
       if (!user) {
         throw new NotFoundException('User not found');
@@ -74,11 +81,10 @@ export class AuthService {
         throw new UnauthorizedException('Password is incorrect');
       }
 
-      console.log(user);
       const { accessToken, refreshToken } = await this.generateTokens(
         user.id,
-        user.email,
         user.role,
+        user.email || '',
       );
 
       return {
@@ -106,8 +112,8 @@ export class AuthService {
 
       const { accessToken, refreshToken } = await this.generateTokens(
         createdUser.id,
-        createdUser.email,
         createdUser.role,
+        createdUser.email || '',
       );
 
       return {
@@ -144,8 +150,8 @@ export class AuthService {
 
     const { accessToken, refreshToken } = await this.generateTokens(
       decoded.userId,
-      decoded.email,
       decoded.role,
+      decoded.email,
     );
     return { accessToken, refreshToken };
   }

@@ -9,6 +9,8 @@ import { SavingInstitution } from 'src/saving-institutions/entities/saving-insti
 import { SavingProduct } from 'src/saving-products/entities/saving-product.entity';
 import { UserSubscription } from 'src/users/entity/user-subscription.entity';
 import { SubSavingProduct } from 'src/saving-products/entities/sub-saving-product.entity';
+import { Cooperative } from 'src/cooperative/entities/cooperative.entity';
+import { UserCooperative } from 'src/users/entity/user-cooperative.entity';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -28,6 +30,8 @@ import { SubSavingProduct } from 'src/saving-products/entities/sub-saving-produc
           SavingInstitution,
           SavingProduct,
           SubSavingProduct,
+          Cooperative,
+          UserCooperative,
           UserSubscription,
         ],
         // entities: [__dirname + '/../**/*.entity{.ts}'],

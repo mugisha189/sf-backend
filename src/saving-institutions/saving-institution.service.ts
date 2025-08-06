@@ -83,14 +83,14 @@ export class SavingInstitutionService {
         )}/set-password?token=${token}`;
 
         await this.emailService.sendSavingInstitutionWelcomeEmail(
-          savedAdmin.email,
           savedSavingInstitution.name,
+          savedAdmin.email || '',
         );
 
         await this.emailService.sendSavingInstitutionSetupEmail(
-          savedAdmin.email,
           savedSavingInstitution.name,
           setupLink,
+          savedAdmin.email || '',
         );
 
         return savedSavingInstitution;

@@ -35,7 +35,7 @@ export class CreateUserDto {
     phoneNumber: string
 
     @ApiProperty()
-    @IsEnum(UserRole, { message: 'role must be one of SUPER_ADMIN, COMPANY_ADMIN, or SUBSCRIBER' })
+    @IsEnum(UserRole, { message: 'role must be one of SUPER_ADMIN, COMPANY_ADMIN, or USER' })
     @IsNotEmpty()
     role: UserRole
 

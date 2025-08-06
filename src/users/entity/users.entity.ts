@@ -1,7 +1,3 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { UserRole } from 'src/constants/role.enum';
-import { SavingInstitution } from 'src/saving-institutions/entities/saving-institution.entity';
-import { ServiceProvider } from 'src/service-provider/entities/service-provider.entity';
 import {
   Column,
   CreateDateColumn,
@@ -11,7 +7,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { UserRole } from 'src/constants/role.enum';
+import { SavingInstitution } from 'src/saving-institutions/entities/saving-institution.entity';
+import { ServiceProvider } from 'src/service-provider/entities/service-provider.entity';
 import { UserSubscription } from './user-subscription.entity';
+import { UserCooperative } from './user-cooperative.entity';
 
 @Entity()
 export class User {
@@ -27,21 +28,26 @@ export class User {
   @Column({ type: 'varchar', unique: true })
   nationalId: string;
 
-  @Column({ type: 'varchar', unique: true })
-  email: string;
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  @IsOptional()
+  @IsEmail()
+  email?: string | null;
 
   @Column({ type: 'varchar' })
   phoneNumber: string;
 
   @Column({ type: 'enum', enum: Object.values(UserRole) })
   @IsEnum(UserRole, {
-    message: 'role must be SUPER_ADMIN, COMPANY_ADMIN, or SUBSCRIBER',
+    message: 'role must be SUPER_ADMIN, COMPANY_ADMIN, or USER',
   })
   @IsNotEmpty()
   role: UserRole;
 
   @Column({ type: 'varchar' })
   password: string;
+
+  @OneToMany(() => UserCooperative, (uc) => uc.user)
+  userCooperatives: UserCooperative[];
 
   @OneToOne(() => ServiceProvider, (company) => company.admin)
   serviceProvider: ServiceProvider;
