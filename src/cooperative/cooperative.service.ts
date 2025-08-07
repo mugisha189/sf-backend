@@ -39,6 +39,7 @@ export class CooperativeService {
     private tokenService: TokenService,
     private emailService: EmailService,
     private jwtService: JwtService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createDto: CreateCooperativeDto): Promise<Cooperative> {
@@ -60,7 +61,7 @@ export class CooperativeService {
         email: createDto.admin.email,
         nationalId: createDto.admin.nationalId,
         role: UserRole.USER,
-        password: await bcrypt.hash('Default@123', 10),
+        password: await bcrypt.hash('', 10),
       });
 
       const savedAdmin = await queryRunner.manager.save(admin);
@@ -130,78 +131,162 @@ export class CooperativeService {
     }
   }
 
-  async addMembers(coopId: string, dto: AddMembersDto): Promise<User[]> {
-    const cooperative = await this.cooperativeRepo.findOne({
-      where: { id: coopId },
-    });
+  // async addMembers(coopId: string, dto: AddMembersDto): Promise<User[]> {
+  //   const cooperative = await this.cooperativeRepo.findOne({
+  //     where: { id: coopId },
+  //   });
 
-    if (!cooperative) throw new NotFoundException('Cooperative not found.');
+  //   if (!cooperative) throw new NotFoundException('Cooperative not found.');
+
+  //   const newUsers: User[] = [];
+
+  //   for (const memberDto of dto.members) {
+  //     const existingUser = await this.userRepo.findOne({
+  //       where: { email: memberDto.email },
+  //     });
+
+  //     if (existingUser) {
+  //       const existingMembership = await this.userCooperativeRepo.findOne({
+  //         where: {
+  //           user: { id: existingUser.id },
+  //           cooperative: { id: coopId },
+  //         },
+  //         relations: ['user', 'cooperative'],
+  //       });
+
+  //       if (existingMembership) {
+  //         throw new BadRequestException(
+  //           `User with email ${memberDto.email} is already a member of this cooperative.`,
+  //         );
+  //       }
+
+  //       const userCoop = this.userCooperativeRepo.create({
+  //         user: existingUser,
+  //         cooperative,
+  //         role: UserCooperativeRole.MEMBER,
+  //         status: UserCooperativeStatus.ACTIVE,
+  //       });
+
+  //       await this.userCooperativeRepo.save(userCoop);
+
+  //       await this.emailService.sendCooperativeWelcomeEmail(
+  //         cooperative.name,
+  //         existingUser.email || '',
+  //       );
+
+  //       newUsers.push(existingUser);
+  //     } else {
+  //       const newUser = this.userRepo.create({
+  //         ...memberDto,
+  //         role: UserRole.USER,
+  //         password: await bcrypt.hash('Default@123', 10),
+  //       });
+
+  //       const savedUser = await this.userRepo.save(newUser);
+
+  //       const userCoop = this.userCooperativeRepo.create({
+  //         user: savedUser,
+  //         cooperative,
+  //         role: UserCooperativeRole.MEMBER,
+  //         status: UserCooperativeStatus.ACTIVE,
+  //       });
+
+  //       await this.userCooperativeRepo.save(userCoop);
+
+  //       await this.emailService.sendCooperativeWelcomeEmail(
+  //         cooperative.name,
+  //         savedUser.email || '',
+  //       );
+
+  //       newUsers.push(savedUser);
+  //     }
+  //   }
+
+  //   return newUsers;
+  // }
+
+  async addMembers(coopId: string, dto: AddMembersDto): Promise<User[]> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     const newUsers: User[] = [];
 
-    for (const memberDto of dto.members) {
-      const existingUser = await this.userRepo.findOne({
-        where: { email: memberDto.email },
+    try {
+      const cooperative = await queryRunner.manager.findOne(Cooperative, {
+        where: { id: coopId },
       });
 
-      if (existingUser) {
-        const existingMembership = await this.userCooperativeRepo.findOne({
-          where: {
-            user: { id: existingUser.id },
-            cooperative: { id: coopId },
-          },
-          relations: ['user', 'cooperative'],
+      if (!cooperative) {
+        throw new NotFoundException('Cooperative not found.');
+      }
+
+      for (const memberDto of dto.members) {
+        let user = await queryRunner.manager.findOne(User, {
+          where: { email: memberDto.email },
         });
 
-        if (existingMembership) {
-          throw new BadRequestException(
-            `User with email ${memberDto.email} is already a member of this cooperative.`,
+        if (user) {
+          const existingMembership = await queryRunner.manager.findOne(
+            UserCooperative,
+            {
+              where: {
+                user: { id: user.id },
+                cooperative: { id: coopId },
+              },
+              relations: ['user', 'cooperative'],
+            },
           );
+
+          if (existingMembership) {
+            throw new BadRequestException(
+              `User with email ${memberDto.email} is already a member of this cooperative.`,
+            );
+          }
+        } else {
+          const defaultPassword = this.configService.get<string>(
+            'DEFAULT_USER_PASSWORD',
+          );
+          if (!defaultPassword)
+            throw new BadRequestException('No default password for USER set');
+
+          user = queryRunner.manager.create(User, {
+            ...memberDto,
+            role: UserRole.USER,
+            password: await bcrypt.hash(defaultPassword, 10),
+          });
+
+          user = await queryRunner.manager.save(User, user);
         }
 
-        const userCoop = this.userCooperativeRepo.create({
-          user: existingUser,
+        const userCoop = queryRunner.manager.create(UserCooperative, {
+          user,
           cooperative,
           role: UserCooperativeRole.MEMBER,
           status: UserCooperativeStatus.ACTIVE,
         });
 
-        await this.userCooperativeRepo.save(userCoop);
-
-        await this.emailService.sendCooperativeWelcomeEmail(
-          cooperative.name,
-          existingUser.email || '',
-        );
-
-        newUsers.push(existingUser);
-      } else {
-        const newUser = this.userRepo.create({
-          ...memberDto,
-          role: UserRole.USER,
-          password: await bcrypt.hash('Default@123', 10),
-        });
-
-        const savedUser = await this.userRepo.save(newUser);
-
-        const userCoop = this.userCooperativeRepo.create({
-          user: savedUser,
-          cooperative,
-          role: UserCooperativeRole.MEMBER,
-          status: UserCooperativeStatus.ACTIVE,
-        });
-
-        await this.userCooperativeRepo.save(userCoop);
-
-        await this.emailService.sendCooperativeWelcomeEmail(
-          cooperative.name,
-          savedUser.email || '',
-        );
-
-        newUsers.push(savedUser);
+        await queryRunner.manager.save(UserCooperative, userCoop);
+        newUsers.push(user);
       }
-    }
 
-    return newUsers;
+      await queryRunner.commitTransaction();
+
+      // Send emails **after transaction** to avoid blocking writes if email fails
+      for (const user of newUsers) {
+        await this.emailService.sendCooperativeWelcomeEmail(
+          cooperative.name,
+          user.email || '',
+        );
+      }
+
+      return newUsers;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async getMembers(coopId: string): Promise<User[]> {

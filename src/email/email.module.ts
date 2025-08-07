@@ -11,11 +11,10 @@ import { UsersModule } from 'src/users/users.module';
 
 @Module({
   providers: [EmailService],
-  exports: [EmailService], //export for DI 
+  exports: [EmailService], //export for DI
   imports: [
     MailerModule.forRootAsync({
       inject: [ConfigService],
-
 
       useFactory: (configService: ConfigService) => {
         const requiredEnvVars = [
@@ -24,47 +23,49 @@ import { UsersModule } from 'src/users/users.module';
           'EMAIL_SECURE',
           'GMAIL_SERVICE_AUTH_EMAIL',
           'GMAIL_SERVICE_AUTH_APP_PASSWORD',
-          'EMAIL_FROM'
+          'EMAIL_FROM',
         ];
 
         for (const envVar of requiredEnvVars) {
           console.log(`${envVar} ${configService.get(envVar)}`);
           if (!configService.get(envVar)) {
             console.log(`Missing required environment variable ${envVar}`);
-            throw new NotFoundException(`Missing required environment variable ${envVar}`)
-          };
+            throw new NotFoundException(
+              `Missing required environment variable ${envVar}`,
+            );
+          }
         }
         return {
-
           transport: {
             host: configService.get<string>('EMAIL_HOST'),
             port: configService.get<number>('EMAIL_PORT'),
             secure: configService.get<boolean>('EMAIL_SECURE'), // true for 465, false for 587
             auth: {
               user: configService.get<string>('GMAIL_SERVICE_AUTH_EMAIL'),
-              pass: configService.get<string>('GMAIL_SERVICE_AUTH_APP_PASSWORD'),
+              pass: configService.get<string>(
+                'GMAIL_SERVICE_AUTH_APP_PASSWORD',
+              ),
             },
             tls: {
               // Add tls for the security purposes
-              rejectUnauthorized: true
-            }
+              rejectUnauthorized: true,
+            },
           },
           defaults: {
-            from: `"Save for Future" <${configService.get<string>("EMAIL_FROM")}>`
+            from: `"Save for Future" <${configService.get<string>('EMAIL_FROM')}>`,
           },
           template: {
             dir: join(__dirname, 'templates'),
             adapter: new HandlebarsAdapter(),
             options: {
-              strict: true
-            }
-          }
-        }
-      }
+              strict: true,
+            },
+          },
+        };
+      },
     }),
     TypeOrmModule.forFeature([OtpEntity, User]),
-    UsersModule
-
-  ]
+    UsersModule,
+  ],
 })
-export class EmailModule { }
+export class EmailModule {}

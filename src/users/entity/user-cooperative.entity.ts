@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Unique,
+  Index,
 } from 'typeorm';
 import { User } from 'src/users/entity/users.entity';
 import { Cooperative } from 'src/cooperative/entities/cooperative.entity';
@@ -15,6 +16,7 @@ import { UserCooperativeStatus } from '../enum/user-cooperative-status.enum';
 
 @Entity()
 @Unique(['user', 'cooperative'])
+@Index(['user', 'cooperative'], { unique: true })
 export class UserCooperative {
   @PrimaryGeneratedColumn('uuid')
   id: string;

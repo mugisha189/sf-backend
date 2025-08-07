@@ -125,7 +125,7 @@ export class SavingProductController {
     );
   }
 
-  @Post(':id/subproducts')
+  @Post(':id/subproduct')
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Add subproducts to a saving product' })
   @HttpCode(HttpStatus.CREATED)
