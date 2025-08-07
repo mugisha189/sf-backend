@@ -11,6 +11,7 @@ import { UserSubscription } from 'src/users/entity/user-subscription.entity';
 import { SubSavingProduct } from 'src/saving-products/entities/sub-saving-product.entity';
 import { Cooperative } from 'src/cooperative/entities/cooperative.entity';
 import { UserCooperative } from 'src/users/entity/user-cooperative.entity';
+import { Saving } from 'src/savings/entities/saving.entity';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -33,6 +34,7 @@ import { UserCooperative } from 'src/users/entity/user-cooperative.entity';
           Cooperative,
           UserCooperative,
           UserSubscription,
+          Saving,
         ],
         // entities: [__dirname + '/../**/*.entity{.ts}'],
         database: configService.get('DATABASE_NAME'),

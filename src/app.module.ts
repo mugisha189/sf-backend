@@ -14,6 +14,7 @@ import { SavingInstitutionModule } from './saving-institutions/saving-institutio
 import { SavingProductModule } from './saving-products/saving-product.module';
 import { UssdModule } from './ussd/ussd.module';
 import { CooperativeModule } from './cooperative/cooperative.module';
+import { SavingModule } from './savings/saving.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CooperativeModule } from './cooperative/cooperative.module';
     CloudinaryModule,
     TypeOrmModule.forFeature([User]),
     UssdModule,
+    SavingModule,
   ],
   providers: [SeedsService],
 })

@@ -15,6 +15,8 @@ import { SubSavingProduct } from './entities/sub-saving-product.entity';
 import { CreateSubSavingProductDto } from './dto/create-sub-saving-product.dto';
 import { UpdateSubSavingProductDto } from './dto/update-sub-saving-product.dto';
 import { SubSavingProductStatus } from './enums/sub-saving-product-status.enum';
+import { SavingProductType } from './enums/saving-product-type.enum';
+import { ServiceProvider } from 'src/service-provider/entities/service-provider.entity';
 
 @Injectable()
 export class SavingProductService {
@@ -25,6 +27,9 @@ export class SavingProductService {
     @InjectRepository(SavingInstitution)
     private readonly institutionRepo: Repository<SavingInstitution>,
 
+    @InjectRepository(ServiceProvider)
+    private readonly serviceProviderRepo: Repository<ServiceProvider>,
+
     @InjectRepository(SubSavingProduct)
     private readonly subProductRepo: Repository<SubSavingProduct>,
   ) {}
@@ -33,24 +38,42 @@ export class SavingProductService {
     const savingInstitution = await this.institutionRepo.findOne({
       where: { id: createDto.savingInstitutionId },
     });
+
     if (!savingInstitution) {
       throw new NotFoundException('Saving institution not found.');
+    }
+
+    let serviceProvider: ServiceProvider | undefined;
+
+    if (createDto.serviceProviderId) {
+      const found = await this.serviceProviderRepo.findOne({
+        where: { id: createDto.serviceProviderId },
+      });
+
+      if (!found) {
+        throw new NotFoundException('Service provider not found.');
+      }
+
+      serviceProvider = found;
     }
 
     const savingProduct = this.productRepo.create({
       name: createDto.name,
       description: createDto.description,
-      cashBackPercentage: createDto.cashBackPercentage,
       sfDividend: createDto.sfDividend,
-      savingProductDividend: createDto.savingProductDividend,
+      savingInstitutionDividend: createDto.savingInstitutionDividend,
+      serviceProviderDividend: createDto.serviceProviderDividend,
+      type: createDto.type,
       savingInstitution,
+      serviceProvider,
     });
 
-    return this.productRepo.save(savingProduct);
+    return await this.productRepo.save(savingProduct);
   }
 
   async findAll(
     status?: SavingProductStatus,
+    type?: SavingProductType,
     page = 1,
     limit = 10,
     search?: string,
@@ -63,20 +86,19 @@ export class SavingProductService {
     try {
       const query = this.productRepo
         .createQueryBuilder('product')
-        .leftJoinAndSelect('product.savingInstitution', 'savingInstitution')
-        .leftJoinAndSelect(
-          'product.serviceProviderProduct',
-          'serviceProviderProduct',
-        );
+        .leftJoinAndSelect('product.savingInstitution', 'savingInstitution');
 
       if (status) {
         query.andWhere('product.status = :status', { status });
       }
 
+      if (type) {
+        query.andWhere('product.type = :type', { type });
+      }
+
       if (search) {
         query.andWhere(
-          `(LOWER(product.name) LIKE :search 
-            OR LOWER(savingInstitution.name) LIKE :search)`,
+          `(LOWER(product.name) LIKE :search OR LOWER(savingInstitution.name) LIKE :search)`,
           { search: `%${search.toLowerCase()}%` },
         );
       }
@@ -101,11 +123,7 @@ export class SavingProductService {
   async findOne(id: string): Promise<SavingProduct> {
     const product = await this.productRepo.findOne({
       where: { id },
-      relations: [
-        'serviceProvider',
-        'savingInstitution',
-        'serviceProviderProduct',
-      ],
+      relations: ['serviceProvider', 'savingInstitution'],
     });
 
     if (!product) throw new NotFoundException('Saving product not found.');
@@ -156,6 +174,7 @@ export class SavingProductService {
     dto: CreateSubSavingProductDto,
   ): Promise<SubSavingProduct> {
     const product = await this.findOne(productId);
+    console.log(product);
     const subProduct = this.subProductRepo.create({
       title: dto.title,
       amount: dto.amount,
@@ -165,10 +184,10 @@ export class SavingProductService {
   }
 
   async getSubProducts(productId: string): Promise<SubSavingProduct[]> {
-    const product = await this.findOne(productId);
     return this.subProductRepo.find({
-      where: { savingProduct: product },
+      where: { savingProduct: { id: productId } },
       order: { createdAt: 'DESC' },
+      relations: ['savingProduct'],
     });
   }
 

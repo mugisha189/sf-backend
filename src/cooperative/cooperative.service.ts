@@ -162,6 +162,7 @@ export class CooperativeService {
         const userCoop = this.userCooperativeRepo.create({
           user: existingUser,
           cooperative,
+          amount: parseInt(memberDto.amount.toString()),
           role: UserCooperativeRole.MEMBER,
           status: UserCooperativeStatus.ACTIVE,
         });

@@ -192,6 +192,7 @@ export class UssdService {
 
     const { data: products, total } = await this.savingProductService.findAll(
       undefined,
+      undefined,
       page,
       limit,
     );
@@ -247,6 +248,7 @@ export class UssdService {
   private async listAllSavingProducts(page = 1, limit = 5) {
     const { data: products, total } = await this.savingProductService.findAll(
       undefined,
+      undefined,
       page,
       limit,
     );
@@ -272,6 +274,7 @@ export class UssdService {
     limit = 5,
   ) {
     const { data: products, total } = await this.savingProductService.findAll(
+      undefined,
       undefined,
       page,
       limit,

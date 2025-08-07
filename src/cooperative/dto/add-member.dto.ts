@@ -1,4 +1,4 @@
-import { IsArray, ValidateNested } from 'class-validator';
+import { IsArray, IsNumber, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
@@ -21,6 +21,10 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   nationalId: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
 }
 
 export class AddMembersDto {

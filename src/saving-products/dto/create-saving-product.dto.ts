@@ -5,8 +5,11 @@ import {
   IsNumber,
   Min,
   Max,
+  IsEnum,
+  IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SavingProductType } from '../enums/saving-product-type.enum';
 
 export class CreateSavingProductDto {
   @ApiProperty({ description: 'Name of the saving product' })
@@ -21,14 +24,19 @@ export class CreateSavingProductDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Cash back percentage (0-100)',
-    minimum: 0,
-    maximum: 100,
+    enum: SavingProductType,
+    description: 'Must be one of: ',
   })
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  cashBackPercentage: number;
+  @IsEnum(SavingProductType, {
+    message: 'Company type must be either ',
+  })
+  @IsNotEmpty()
+  type: SavingProductType;
+
+  @ApiPropertyOptional({ description: 'Optional ID of the service provider' })
+  @IsOptional()
+  @IsUUID()
+  serviceProviderId?: string;
 
   @ApiProperty({
     description: 'Service provider dividend (0-100)',
@@ -54,7 +62,7 @@ export class CreateSavingProductDto {
   @IsNumber()
   @Min(0)
   @Max(100)
-  savingProductDividend: number;
+  savingInstitutionDividend: number;
 
   @ApiProperty({ description: 'ID of the saving institution' })
   @IsUUID()

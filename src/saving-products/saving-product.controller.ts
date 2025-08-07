@@ -28,6 +28,7 @@ import { UserRole } from 'src/constants/role.enum';
 import { SavingProductStatus } from './enums/saving-product-status.enum';
 import { CreateSubSavingProductDto } from './dto/create-sub-saving-product.dto';
 import { UpdateSubSavingProductDto } from './dto/update-sub-saving-product.dto';
+import { SavingProductType } from './enums/saving-product-type.enum';
 
 @Controller('saving-product')
 @UseGuards(AuthGuard, RolesGuard)
@@ -49,10 +50,14 @@ export class SavingProductController {
   }
 
   @Get()
-  @Roles(UserRole.SUPER_ADMIN)
   @ApiQuery({
     name: 'status',
     enum: SavingProductStatus,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'type',
+    enum: SavingProductType,
     required: false,
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
@@ -65,12 +70,14 @@ export class SavingProductController {
   })
   async findAll(
     @Query('status') status?: SavingProductStatus,
+    @Query('type') type?: SavingProductType,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('search') search?: string,
   ) {
     const result = await this.savingProductService.findAll(
       status,
+      type,
       Number(page),
       Number(limit),
       search,
@@ -144,7 +151,6 @@ export class SavingProductController {
   }
 
   @Get(':id/subproducts')
-  @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get subproducts for a saving product' })
   async getSubProducts(@Param('id') productId: string) {
     const result = await this.savingProductService.getSubProducts(productId);

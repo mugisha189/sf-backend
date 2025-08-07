@@ -33,7 +33,9 @@ export class UsersService {
     this.avatarFolderName = 'USER_AVATARS';
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(
+    createUserDto: CreateUserDto & { role: UserRole },
+  ): Promise<User> {
     if (createUserDto.password !== createUserDto.confirmPassword) {
       throw new BadRequestException('Password must match');
     }

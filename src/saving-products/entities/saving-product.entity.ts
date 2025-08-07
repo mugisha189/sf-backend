@@ -12,6 +12,9 @@ import { IsEnum } from 'class-validator';
 import { SavingProductStatus } from '../enums/saving-product-status.enum';
 import { SavingInstitution } from 'src/saving-institutions/entities/saving-institution.entity';
 import { SubSavingProduct } from './sub-saving-product.entity';
+import { SavingProductType } from '../enums/saving-product-type.enum';
+import { ServiceProvider } from 'src/service-provider/entities/service-provider.entity';
+
 @Entity()
 export class SavingProduct {
   @PrimaryGeneratedColumn('uuid')
@@ -23,17 +26,20 @@ export class SavingProduct {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  cashBackPercentage: number;
-
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  serviceProviderDividend: number;
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    default: 0,
+  })
+  serviceProviderDividend?: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   sfDividend: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  savingProductDividend: number;
+  savingInstitutionDividend: number;
 
   @ManyToOne(
     () => SavingInstitution,
@@ -46,10 +52,14 @@ export class SavingProduct {
   @JoinColumn()
   savingInstitution: SavingInstitution;
 
+  @ManyToOne(() => ServiceProvider, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
+  serviceProvider?: ServiceProvider;
+
   @OneToMany(() => SubSavingProduct, (subProduct) => subProduct.savingProduct, {
     cascade: true,
   })
-  subSavingProducts: SubSavingProduct[];
+  subSavingProducts?: SubSavingProduct[];
 
   @Column({
     type: 'enum',
@@ -58,6 +68,14 @@ export class SavingProduct {
   })
   @IsEnum(SavingProductStatus)
   status: SavingProductStatus;
+
+  @Column({
+    type: 'enum',
+    enum: Object.values(SavingProductType),
+    nullable: true,
+  })
+  @IsEnum(SavingProductType)
+  type: SavingProductType;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
