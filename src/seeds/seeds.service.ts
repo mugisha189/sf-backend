@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from 'src/constants/role.enum';
 import { User } from 'src/users/entity/users.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SeedsService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly configService: ConfigService,
   ) {}
 
   async createSuperAdmin() {
