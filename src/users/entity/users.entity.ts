@@ -19,11 +19,11 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 50 })
-  firstName: string;
+  @Column({ type: 'varchar', nullable: true, length: 50 })
+  firstName?: string;
 
-  @Column({ type: 'varchar', length: 50 })
-  lastName: string;
+  @Column({ type: 'varchar', nullable: true, length: 50 })
+  lastName?: string;
 
   @Column({ type: 'varchar', unique: true })
   nationalId: string;
@@ -33,8 +33,11 @@ export class User {
   @IsEmail()
   email?: string | null;
 
-  @Column({ type: 'varchar' })
-  phoneNumber: string;
+  @Column({ type: 'varchar', nullable: true })
+  phoneNumber?: string;
+
+  @Column({ type: 'integer', nullable: true })
+  configuredContributionAmount?: number;
 
   @Column({ type: 'enum', enum: Object.values(UserRole) })
   @IsEnum(UserRole, {

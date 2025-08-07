@@ -111,7 +111,7 @@ export class UssdService {
       const pin = input[1];
       try {
         await this.authService.signIn({
-          identifier: user.email || user.phoneNumber,
+          identifier: user?.email || user?.phoneNumber || '',
           password: pin,
         });
         this.sessionMap.set(sessionKey, {

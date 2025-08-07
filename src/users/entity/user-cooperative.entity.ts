@@ -26,6 +26,9 @@ export class UserCooperative {
   })
   user: User;
 
+  @Column({ type: 'integer' })
+  contributionAmount: number;
+
   @ManyToOne(() => Cooperative, (coop) => coop.userCooperatives, {
     onDelete: 'CASCADE',
   })

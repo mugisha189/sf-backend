@@ -253,6 +253,7 @@ export class CooperativeService {
           user = queryRunner.manager.create(User, {
             ...memberDto,
             role: UserRole.USER,
+            cooperativeContributionAmount: memberDto.contributionAmount,
             password: await bcrypt.hash(defaultPassword, 10),
           });
 
@@ -262,6 +263,7 @@ export class CooperativeService {
         const userCoop = queryRunner.manager.create(UserCooperative, {
           user,
           cooperative,
+          contributionAmount: 0,
           role: UserCooperativeRole.MEMBER,
           status: UserCooperativeStatus.ACTIVE,
         });

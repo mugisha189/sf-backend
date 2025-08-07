@@ -14,6 +14,8 @@ import { SavingInstitutionModule } from './saving-institutions/saving-institutio
 import { SavingProductModule } from './saving-products/saving-product.module';
 import { UssdModule } from './ussd/ussd.module';
 import { CooperativeModule } from './cooperative/cooperative.module';
+import { ContributionShareModule } from './shared/contribution-share/contribution-share.module';
+import { CoopSavingsModule } from './cooperative-savings/cooperative-savings.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { CooperativeModule } from './cooperative/cooperative.module';
     CloudinaryModule,
     TypeOrmModule.forFeature([User]),
     UssdModule,
+    CoopSavingsModule,
+    ContributionShareModule,
   ],
   providers: [SeedsService],
 })
