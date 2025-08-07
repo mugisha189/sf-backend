@@ -60,6 +60,7 @@ export class CooperativeService {
         phoneNumber: createDto.admin.phoneNumber,
         email: createDto.admin.email,
         nationalId: createDto.admin.nationalId,
+        configuredContributionAmount: 0,
         role: UserRole.USER,
         password: await bcrypt.hash('', 10),
       });
@@ -84,6 +85,7 @@ export class CooperativeService {
         cooperative: savedCooperative,
         role: UserCooperativeRole.PRESIDENT,
         status: UserCooperativeStatus.ACTIVE,
+        contributionAmount: 0,
       });
 
       await queryRunner.manager.save(userCoop);
@@ -125,7 +127,7 @@ export class CooperativeService {
       await queryRunner.rollbackTransaction();
       throw error instanceof BadRequestException
         ? error
-        : new InternalServerErrorException('Failed to create cooperative.');
+        : new InternalServerErrorException(error.message);
     } finally {
       await queryRunner.release();
     }
