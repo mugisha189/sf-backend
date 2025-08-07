@@ -43,6 +43,7 @@ COMPANY_ADMIN_AVATAR_PUBLIC_ID=<cloudinary publicId of profile_photo>
 CLOUDINARY_CLOUD_NAME=<cloud name>
 CLOUDINARY_API_SECRET=<api secret>
 CLOUDINARY_API_KEY=<api key>
+DEFAULT_USER_PASSWORD=<default password>
 ```
 
 - Install required dependencies
