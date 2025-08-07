@@ -211,7 +211,9 @@ export class CooperativeService {
       relations: ['user'],
     });
 
-    return links.map((uc) => uc.user);
+    return links.map((uc) => {
+      return { ...uc.user, amount: uc.amount };
+    });
   }
 
   async removeMember(coopId: string, userId: string): Promise<boolean> {
