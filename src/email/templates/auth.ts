@@ -1,6 +1,5 @@
-
 export const welcomeEmailTemplate = (name: string) => {
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -62,9 +61,8 @@ export const welcomeEmailTemplate = (name: string) => {
     `;
 };
 
-
 export const setupAccountEmailTemplate = (name: string, setupLink: string) => {
-    return `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -135,4 +133,3 @@ export const setupAccountEmailTemplate = (name: string, setupLink: string) => {
     </html>
     `;
 };
-
