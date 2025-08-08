@@ -39,7 +39,7 @@ export class Saving {
   @Column({
     type: 'enum',
     enum: Object.values(SavingStatus),
-    default: SavingStatus.ACTIVE,
+    default: SavingStatus.PENDING,
   })
   @IsEnum(SavingStatus)
   status: SavingStatus;

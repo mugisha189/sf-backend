@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
@@ -6,9 +5,7 @@ import { Readable } from 'stream';
 
 @Injectable()
 export class CloudinaryService {
-
-  constructor(private configService: ConfigService
-  ) {
+  constructor(private configService: ConfigService) {
     // Configure Cloudinary
     cloudinary.config({
       cloud_name: this.configService.get('CLOUDINARY_CLOUD_NAME'),
@@ -17,11 +14,9 @@ export class CloudinaryService {
     });
   }
 
-
-
   async uploadFile(
     file: Express.Multer.File,
-    folder: string
+    folder: string,
   ): Promise<Record<string, string>> {
     return new Promise((resolve, reject) => {
       // Define publicId
@@ -33,24 +28,22 @@ export class CloudinaryService {
           folder,
           public_id,
           unique_filename: false,
-          use_filename: true
-
+          use_filename: true,
         },
         (error, result) => {
           if (error || !result) return reject(error);
           resolve({
             imageUrl: result?.secure_url,
-            imagePublicId: result?.public_id
-          })
-        }
-      )
+            imagePublicId: result?.public_id,
+          });
+        },
+      );
 
       // Convert buffer to readable stream
-      const stream = Readable.from(file.buffer)
-      stream.pipe(uploadStream)
-    })
+      const stream = Readable.from(file.buffer);
+      stream.pipe(uploadStream);
+    });
   }
-
 
   async deleteFile(publicId: string): Promise<boolean> {
     try {
@@ -62,23 +55,28 @@ export class CloudinaryService {
     }
   }
 
-
   async getImagesInFolder(): Promise<Record<string, string[]>> {
     try {
       // Get cloudinary images info
       const response = await cloudinary.api.resources({
         type: 'upload',
-        prefix: "USER_AVATARS", // Fetches all images in the given folder
-        max_results: 100,   // Adjust if needed, max allowed by Cloudinary is 500
+        prefix: 'USER_AVATARS', // Fetches all images in the given folder
+        max_results: 100, // Adjust if needed, max allowed by Cloudinary is 500
       });
 
       // Extract URLs of images
       return {
-        secure_urls: response.resources.map((resource: any) => resource.secure_url),
-        public_ids: response.resources.map((resource: any) => resource.public_id)
+        secure_urls: response.resources.map(
+          (resource: any) => resource.secure_url,
+        ),
+        public_ids: response.resources.map(
+          (resource: any) => resource.public_id,
+        ),
       };
     } catch (error) {
-      throw new Error(`Error fetching images from Cloudinary: ${error.message}`);
+      throw new Error(
+        `Error fetching images from Cloudinary: ${error.message}`,
+      );
     }
   }
 }
