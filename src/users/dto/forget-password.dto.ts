@@ -1,9 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class ForgotPWordDto{
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    email: string
+export class ForgotPWordDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  email: string;
 }

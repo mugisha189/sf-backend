@@ -23,6 +23,7 @@ import { UserRole } from 'src/constants/role.enum';
 
 @Injectable()
 export class SavingService {
+  private readonly logger = new Logger(SavingService.name); // Initialize logger
   constructor(
     @InjectRepository(Saving)
     private readonly savingRepo: Repository<Saving>,
@@ -45,6 +46,28 @@ export class SavingService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
   ) {}
+
+  private async savingCallback(saving: Saving): Promise<void> {
+    try {
+      // Log the saving ID
+      this.logger.log(`Saving created with ID: ${saving.id}`);
+
+      // Update status to ACTIVE if currently PENDING
+      if (saving.status === SavingStatus.PENDING) {
+        saving.status = SavingStatus.ACTIVE;
+        await this.savingRepo.save(saving);
+        this.logger.log(`Saving ID: ${saving.id} status updated to ACTIVE`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to process callback for saving ID: ${saving.id}`,
+        error,
+      );
+      throw new InternalServerErrorException(
+        'Failed to process saving callback',
+      );
+    }
+  }
 
   async create(
     createDto: CreateSavingDto,
@@ -79,7 +102,7 @@ export class SavingService {
       });
 
       const saved = await this.savingRepo.save(saving);
-
+      await this.savingCallback(saved);
       // await this.placeholderActionService.createSfDividends(
       //   saved,
       //   product.sfDividends,
@@ -132,7 +155,7 @@ export class SavingService {
       });
 
       const saved = await this.savingRepo.save(saving);
-
+      await this.savingCallback(saved);
       // await this.placeholderActionService.createSfDividends(saved, Number(activeProduct.sfDividend));
       // await this.placeholderActionService.createServiceProviderDividends(saved, Number(activeProduct.serviceProviderDividend));
 
@@ -179,6 +202,7 @@ export class SavingService {
         });
 
         const saved = await this.savingRepo.save(saving);
+        await this.savingCallback(saved);
         savings.push(saved);
       }
 
@@ -202,7 +226,9 @@ export class SavingService {
         type: SavingProductType.INDIVIDUAL_SAVING,
       });
 
-      return await this.savingRepo.save(saving);
+      const saved = await this.savingRepo.save(saving);
+      await this.savingCallback(saved);
+      return saved;
     }
 
     // if (createDto.type === SavingProductType.OTHER) {
